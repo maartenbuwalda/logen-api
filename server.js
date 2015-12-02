@@ -45,7 +45,12 @@ router.route('/tasks')
         
         var task = new Task();      // create a new instance of the Task model
         task.name = req.body.name;  // set the tasks name (comes from the request)
-        // task.name = "Test";
+        task.description = req.body.description;
+        task.category = req.body.category;
+        task.importance = req.body.importance;
+        task.time_created = req.body.time_created;
+        task.time_finished = req.body.time_finished;
+        task.rating = req.body.rating;
 
         // save the task and check for errors
         task.save(function(err) {
@@ -86,7 +91,14 @@ router.route('/tasks/:task_id')
             if (err)
                 res.send(err);
 
-            task.name = req.body.name;  // update the tasks info
+            task.name = req.body.name;
+	        task.description = req.body.description;
+	        task.category = req.body.category;
+	        task.importance = req.body.importance;
+	        task.time_created = req.body.time_created;
+	        task.time_finished = req.body.time_finished;
+	        task.rating = req.body.rating;
+	        task.archived = req.body.archived;
 
             // save the task
             task.save(function(err) {
