@@ -6,7 +6,7 @@ module.exports = function(app, passport, express, router) {
     // middleware to use for all requests
     // can be used for checking authentication?
     app.use(function(req, res, next){
-      console.log('Something something');
+      // console.log('Something');
       next();
     });
 
