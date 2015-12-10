@@ -1,5 +1,6 @@
 module.exports = function(app, passport, express, router) {
 
+    var User = require('./models/user')
     var Task = require('./models/task')
 
     // middleware to use for all requests
@@ -48,6 +49,20 @@ module.exports = function(app, passport, express, router) {
     });
 
     // =====================================
+    // FACEBOOK ROUTES =====================
+    // =====================================
+    // route for facebook authentication and login
+    app.get('/auth/facebook', passport.authenticate('facebook', { scope : 'email' }));
+
+    // handle the callback after facebook has authenticated the user
+    app.get('/auth/facebook/callback',
+        passport.authenticate('facebook', {
+            successRedirect : '/profile',
+            failureRedirect : '/'
+        }));
+
+
+    // =====================================
     // LOGOUT ==============================
     // =====================================
     app.get('/logout', function(req, res) {
@@ -90,6 +105,37 @@ module.exports = function(app, passport, express, router) {
                 res.json(tasks);
             });
         });
+
+    app.route('/users')
+         // get all the tasks (accessed at GET http://localhost:8080/api/tasks)
+        .get(function(req, res) {
+            User.find(function(err, users) {
+                if (err)
+                    res.send(err);
+
+                res.json(users);
+            });
+        });
+
+    app.route('/users/:user_id')
+        .get(function(req, res) {
+            User.findById(req.params.user_id, function(err, user) {
+                if (err)
+                    res.send(err);
+                res.json(user);
+            });
+        })
+
+        .delete(function(req, res){
+            User.remove({
+                _id: req.params.user_id
+            }, function(err, user) {
+                if (err)
+                    res.send(err);
+
+                res.json({ message: 'Successfully deleted' });
+            });
+        })
 
     app.route('/tasks/:task_id')
 
