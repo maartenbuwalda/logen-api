@@ -23,7 +23,7 @@ module.exports = function(app, passport, express, router) {
 
     // process the login form
     app.post('/login', passport.authenticate('local-login', {
-        successRedirect : '/profile', // redirect to the secure profile section
+        successRedirect : '/overview', // redirect to the overview page
         failureRedirect : '/login', // redirect back to the signup page if there is an error
         failureFlash : true // allow flash messages
     }));
@@ -37,10 +37,17 @@ module.exports = function(app, passport, express, router) {
 
     // process the signup form
     app.post('/signup', passport.authenticate('local-signup', {
-        successRedirect : '/profile', // redirect to the secure profile section
+        successRedirect : '/overview', // redirect to the secure profile section
         failureRedirect : '/signup', // redirect back to the signup page if there is an error
         failureFlash : true // allow flash messages
     }));
+
+    app.get('/overview', isLoggedIn, function(req, res) {
+        res.render('overview.ejs', {
+            user : req.user
+            // tasks
+        });
+    });
 
     app.get('/profile', isLoggedIn, function(req, res) {
         res.render('profile.ejs', {
@@ -57,7 +64,7 @@ module.exports = function(app, passport, express, router) {
     // handle the callback after facebook has authenticated the user
     app.get('/auth/facebook/callback',
         passport.authenticate('facebook', {
-            successRedirect : '/profile',
+            successRedirect : '/overview',
             failureRedirect : '/'
         }));
 

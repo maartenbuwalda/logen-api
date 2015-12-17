@@ -1,0 +1,30 @@
+<!doctype html>
+<html>
+<head>
+    <title>To-do list</title>
+    <meta charset="UTF-8">
+    <script src="https://fb.me/react-0.14.3.js"></script>
+    <script src="https://fb.me/react-dom-0.14.3.js"></script>
+    <script src="https://fb.me/JSXTransformer-0.12.2.js"></script>
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css"> <!-- load bootstrap css -->
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css"> <!-- load fontawesome -->
+</head>
+<body>
+
+  <div id="content"></div>
+  <script type="text/jsx">
+    var App = React.createClass({
+      render:function(){
+        return (
+          <div>
+            <h1>Welcome, <%= user.facebook.name %></h1>
+            <h2>This is your to-do list</h2>
+          </div>
+        )
+      }
+    });
+
+    ReactDOM.render(<App />, document.body);
+  </script>
+</body>
+</html>
