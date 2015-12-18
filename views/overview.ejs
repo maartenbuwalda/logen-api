@@ -18,7 +18,11 @@
         return (
           <div>
             <h1>Welcome, <%= user.facebook.name %></h1>
-            <h2>This is your to-do list</h2>
+            <h2>To do</h2>
+            <div class="item-insert">
+              <input class="item-insert--input" type="text"/>
+              <input type="submit" value="Submit"/>
+            </div>
           </div>
         )
       }
