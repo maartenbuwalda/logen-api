@@ -46,17 +46,13 @@
 
 	'use strict';
 
-	var _hello = __webpack_require__(1);
+	var _overview = __webpack_require__(1);
 
-	var _hello2 = _interopRequireDefault(_hello);
+	var _overview2 = _interopRequireDefault(_overview);
 
-	var _world = __webpack_require__(160);
+	var _profile = __webpack_require__(160);
 
-	var _world2 = _interopRequireDefault(_world);
-
-	var _user = __webpack_require__(161);
-
-	var _user2 = _interopRequireDefault(_user);
+	var _profile2 = _interopRequireDefault(_profile);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -76,6 +72,10 @@
 
 	var _reactDom2 = _interopRequireDefault(_reactDom);
 
+	var _profile = __webpack_require__(160);
+
+	var _profile2 = _interopRequireDefault(_profile);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -84,31 +84,36 @@
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-	var Hello = (function (_React$Component) {
-	  _inherits(Hello, _React$Component);
+	var Overview = (function (_React$Component) {
+	  _inherits(Overview, _React$Component);
 
-	  function Hello() {
-	    _classCallCheck(this, Hello);
+	  function Overview() {
+	    _classCallCheck(this, Overview);
 
-	    return _possibleConstructorReturn(this, Object.getPrototypeOf(Hello).apply(this, arguments));
+	    return _possibleConstructorReturn(this, Object.getPrototypeOf(Overview).apply(this, arguments));
 	  }
 
-	  _createClass(Hello, [{
+	  _createClass(Overview, [{
 	    key: 'render',
 	    value: function render() {
 	      return _react2.default.createElement(
-	        'h1',
+	        'div',
 	        null,
-	        'Hello ',
-	        window.user.name
+	        _react2.default.createElement(
+	          'h1',
+	          null,
+	          'Hello ',
+	          window.user.name
+	        ),
+	        _react2.default.createElement(_profile2.default, null)
 	      );
 	    }
 	  }]);
 
-	  return Hello;
+	  return Overview;
 	})(_react2.default.Component);
 
-	_reactDom2.default.render(_react2.default.createElement(Hello, null), document.getElementById('hello'));
+	_reactDom2.default.render(_react2.default.createElement(Overview, null), document.getElementById('overview'));
 
 /***/ },
 /* 2 */
@@ -19705,6 +19710,10 @@
 
 	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+
 	var _react = __webpack_require__(2);
 
 	var _react2 = _interopRequireDefault(_react);
@@ -19721,40 +19730,74 @@
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-	var World = (function (_React$Component) {
-	  _inherits(World, _React$Component);
+	var Profile = (function (_React$Component) {
+	  _inherits(Profile, _React$Component);
 
-	  function World() {
-	    _classCallCheck(this, World);
+	  function Profile() {
+	    _classCallCheck(this, Profile);
 
-	    return _possibleConstructorReturn(this, Object.getPrototypeOf(World).apply(this, arguments));
+	    return _possibleConstructorReturn(this, Object.getPrototypeOf(Profile).apply(this, arguments));
 	  }
 
-	  _createClass(World, [{
+	  _createClass(Profile, [{
 	    key: 'render',
 	    value: function render() {
 	      return _react2.default.createElement(
-	        'h1',
+	        'div',
 	        null,
-	        'World'
+	        _react2.default.createElement(
+	          'div',
+	          { 'class': 'page-header text-center' },
+	          _react2.default.createElement(
+	            'h1',
+	            null,
+	            _react2.default.createElement('span', { 'class': 'fa fa-anchor' }),
+	            ' Profile Page'
+	          ),
+	          _react2.default.createElement(
+	            'a',
+	            { href: '/logout', 'class': 'btn btn-default btn-sm' },
+	            'Logout'
+	          )
+	        ),
+	        _react2.default.createElement(
+	          'div',
+	          { 'class': 'row' },
+	          _react2.default.createElement(
+	            'div',
+	            { 'class': 'col-sm-6' },
+	            _react2.default.createElement(
+	              'div',
+	              { 'class': 'well' },
+	              _react2.default.createElement(
+	                'h3',
+	                { 'class': 'text-primary' },
+	                _react2.default.createElement('span', { 'class': 'fa fa-facebook' }),
+	                ' Facebook'
+	              ),
+	              _react2.default.createElement(
+	                'p',
+	                null,
+	                _react2.default.createElement(
+	                  'strong',
+	                  null,
+	                  'name asd sadsa'
+	                ),
+	                ': ',
+	                window.user.name
+	              )
+	            )
+	          )
+	        )
 	      );
 	    }
 	  }]);
 
-	  return World;
+	  return Profile;
 	})(_react2.default.Component);
 
-	_reactDom2.default.render(_react2.default.createElement(World, null), document.getElementById('world'));
-
-/***/ },
-/* 161 */
-/***/ function(module, exports) {
-
-	"use strict";
-
-	{
-	  console.log(window.user);
-	}
+	exports.default = Profile;
+	// ReactDOM.render(<Profile/>, document.getElementById('profile'));
 
 /***/ }
 /******/ ]);

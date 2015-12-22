@@ -46,7 +46,6 @@ module.exports = function(app, passport, express, router) {
         res.locals = {
             user: req.user
         }
-        console.log(res.locals)
         res.render('overview.ejs');
     });
 
@@ -113,37 +112,6 @@ module.exports = function(app, passport, express, router) {
                 res.json(tasks);
             });
         });
-
-    app.route('/users')
-         // get all the tasks (accessed at GET http://localhost:8080/api/tasks)
-        .get(function(req, res) {
-            User.find(function(err, users) {
-                if (err)
-                    res.send(err);
-
-                res.json(users);
-            });
-        });
-
-    app.route('/users/:user_id')
-        .get(function(req, res) {
-            User.findById(req.params.user_id, function(err, user) {
-                if (err)
-                    res.send(err);
-                res.json(user);
-            });
-        })
-
-        .delete(function(req, res){
-            User.remove({
-                _id: req.params.user_id
-            }, function(err, user) {
-                if (err)
-                    res.send(err);
-
-                res.json({ message: 'Successfully deleted' });
-            });
-        })
 
     app.route('/tasks/:task_id')
 

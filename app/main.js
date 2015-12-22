@@ -1,3 +1,2 @@
-import Hello from './controllers/hello.js';
-import World from './controllers/world.js';
-import User from './controllers/user.js';
+import Overview from './components/overview.js';
+import Profile from './components/profile.js';
