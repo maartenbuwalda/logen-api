@@ -36,8 +36,8 @@ app.set('view engine', 'ejs'); // set up ejs for templating
 
 // required for passport
 app.use(session({
-  secret: 'ilovescotchscotchyscotchscotch',
-  cookie: { expires : new Date(Date.now() + 3600000) }
+  secret: 'dagA$@!$adasTgADgaad4e123fsdfSDFD!@eqwfsafsf',
+  cookie: { expires : new Date(Date.now() + 360000000) }
 })); // session secret
 app.use(passport.initialize());
 app.use(passport.session()); // persistent login sessions
