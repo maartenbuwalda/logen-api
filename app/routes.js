@@ -43,10 +43,11 @@ module.exports = function(app, passport, express, router) {
     }));
 
     app.get('/overview', isLoggedIn, function(req, res) {
-        res.render('overview.ejs', {
-            user : req.user
-            // tasks
-        });
+        res.locals = {
+            user: req.user
+        }
+        console.log(res.locals)
+        res.render('overview.ejs');
     });
 
     app.get('/profile', isLoggedIn, function(req, res) {
@@ -202,7 +203,6 @@ module.exports = function(app, passport, express, router) {
 
 // route middleware to make sure a user is logged in
 function isLoggedIn(req, res, next) {
-
     // if user is authenticated in the session, carry on
     if (req.isAuthenticated())
         return next();
