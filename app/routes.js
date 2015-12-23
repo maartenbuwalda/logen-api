@@ -84,7 +84,10 @@ module.exports = function(app, passport, express, router) {
         // create a task (accessed at POST http://localhost:8080/api/tasks)
         .post(function(req, res) {
 
+            console.log(req.body)
+
             var task = new Task();      // create a new instance of the Task model
+            task.user_id = req.body.user_id;
             task.name = req.body.name;  // set the tasks name (comes from the request)
             task.description = req.body.description;
             task.category = req.body.category;
@@ -92,6 +95,7 @@ module.exports = function(app, passport, express, router) {
             task.time_created = req.body.time_created;
             task.time_finished = req.body.time_finished;
             task.rating = req.body.rating;
+            task.status = req.body.status;
 
             // save the task and check for errors
             task.save(function(err) {
@@ -110,6 +114,29 @@ module.exports = function(app, passport, express, router) {
                     res.send(err);
 
                 res.json(tasks);
+            });
+        });
+
+    app.route('/tasks/:user_id')
+
+        .get(function(req, res) {
+            Task.find(
+                {"user_id": req.params.user_id},
+                function(err, task) {
+                    if (err)
+                        res.send(err);
+                    res.json(task);
+            });
+        })
+
+        .delete(function(req, res){
+            Task.remove({
+                user_id: req.params.user_id
+            }, function(err, task) {
+                if (err)
+                    res.send(err);
+
+                res.json({ message: 'All tasks of this user successfully deleted' });
             });
         });
 
@@ -132,14 +159,16 @@ module.exports = function(app, passport, express, router) {
                 if (err)
                     res.send(err);
 
+                task.user_id = req.body.user_id;
                 task.name = req.body.name;
-              task.description = req.body.description;
-              task.category = req.body.category;
-              task.importance = req.body.importance;
-              task.time_created = req.body.time_created;
-              task.time_finished = req.body.time_finished;
-              task.rating = req.body.rating;
-              task.archived = req.body.archived;
+                task.description = req.body.description;
+                task.category = req.body.category;
+                task.importance = req.body.importance;
+                task.time_created = req.body.time_created;
+                task.time_finished = req.body.time_finished;
+                task.rating = req.body.rating;
+                task.archived = req.body.archived;
+                task.status = req.body.status;
 
                 // save the task
                 task.save(function(err) {
