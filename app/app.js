@@ -4,15 +4,21 @@ import Profile from './components/profile';
 import TaskInput from './components/task-input';
 import ItemList from './components/item-list';
 
-class App extends React.Component {
-  render() {
+var App = React.createClass({
+  getInitialState: function(){
+    return {
+      tasks: []
+    }
+  },
+
+  render: function(){
     return <div>
       <h1>Hello {window.user.name}</h1>
       <Profile/>
-      <TaskInput/>
-      <ItemList/>
+      <TaskInput tasks={this.state.tasks} />
+      <ItemList tasks={this.state.tasks} />
     </div>
   }
-}
+});
 
 ReactDOM.render(<App/>, document.getElementById('content'));
