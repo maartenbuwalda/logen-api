@@ -102,7 +102,35 @@ module.exports = function(app, passport, express, router) {
             });
         });
 
-    app.route('/users/:user_id/tasks/:task_id')
+    app.route('/tasks')
+        // create a task (accessed at POST http://localhost:8080/api/tasks)
+        .post(function(req, res) {
+            var task = new Task();      // create a new instance of the Task model
+            task.name = req.body.name;  // set the tasks name (comes from the request)
+            task.user_id = req.body.user_id;
+            task.description = req.body.description;
+            task.category = req.body.category;
+            task.importance = req.body.importance;
+            task.time_created = req.body.time_created;
+            task.time_finished = req.body.time_finished;
+            task.rating = req.body.rating;
+            // save the task and check for errors
+            task.save(function(err) {
+                if (err)
+                    res.send(err);
+                res.json({ message: 'Task created!' });
+            });
+        })
+         // get all the tasks (accessed at GET http://localhost:8080/api/tasks)
+        .get(function(req, res) {
+            Task.find(function(err, tasks) {
+                if (err)
+                    res.send(err);
+                res.json(tasks);
+            });
+        });
+
+    app.route('/tasks/:task_id')
 
         // get the task with that id (accessed at GET http://localhost:8080/api/tasks/:task_id)
         .get(function(req, res) {

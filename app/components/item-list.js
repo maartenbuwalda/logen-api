@@ -5,29 +5,20 @@ class ItemList extends React.Component {
 
   constructor(props, context){
     super(props, context);
-    // Get the list of items from the database
-    this.getItemList();
 
     this.state = {
       tasks: this.props.tasks
     }
   }
 
-  getItemList(){
-    var self = this;
-    var url = "http://localhost:8080/users/" + window.user.id + "/tasks"
-    $.get(url,
-      function(data){
-        self.state.tasks = data;
-        console.log(self.props)
-        console.log(self.state)
-      }
-    )
-  }
-
   render(){
+    // console.log(this.props.tasks.map)
     return (
-      <div>test</div>
+      <ul>
+        {this.props.tasks.map(function(listValue){
+          return <li>{listValue.name}</li>;
+        })}
+      </ul>
     )
   }
 }

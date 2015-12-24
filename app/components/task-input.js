@@ -27,6 +27,7 @@ class TaskInput extends React.Component {
   }
 
   _addItem(e){
+    var self = this;
     if (e.which === 13) {
 
       var data = this.state;
@@ -34,7 +35,8 @@ class TaskInput extends React.Component {
 
       $.post(url, data,
         function(data){
-          console.log("Successfully posted:", data)
+          self.props.tasks.push(data)
+          console.log(self.props.tasks)
         }
       )
     }
