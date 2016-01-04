@@ -154,8 +154,11 @@ var ToDoList = React.createClass({
         {this.props.tasks.map(function(item, i){
           var boundClick = self._deleteItem.bind(null, item._id)
           return (
-            <li key={item._id}>
-              {item.name}
+            <li key={i}>
+              <div>Name: {item.name}</div>
+              <div>Description: {item.description}</div>
+              <div>Importance: {item.importance}</div>
+              <div>Created: {item.time_created}</div>
               <span onClick={boundClick}> Delete </span>
             </li>
           )

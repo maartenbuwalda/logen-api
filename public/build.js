@@ -244,8 +244,31 @@
 	          var boundClick = self._deleteItem.bind(null, item._id);
 	          return _react2.default.createElement(
 	            'li',
-	            { key: item._id },
-	            item.name,
+	            { key: i },
+	            _react2.default.createElement(
+	              'div',
+	              null,
+	              'Name: ',
+	              item.name
+	            ),
+	            _react2.default.createElement(
+	              'div',
+	              null,
+	              'Description: ',
+	              item.description
+	            ),
+	            _react2.default.createElement(
+	              'div',
+	              null,
+	              'Importance: ',
+	              item.importance
+	            ),
+	            _react2.default.createElement(
+	              'div',
+	              null,
+	              'Created: ',
+	              item.time_created
+	            ),
 	            _react2.default.createElement(
 	              'span',
 	              { onClick: boundClick },
