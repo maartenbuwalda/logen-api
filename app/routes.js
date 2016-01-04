@@ -6,7 +6,6 @@ module.exports = function(app, passport, express, router) {
     // middleware to use for all requests
     // can be used for checking authentication?
     app.use(function(req, res, next){
-      // console.log('Something');
       next();
     });
 
@@ -16,7 +15,6 @@ module.exports = function(app, passport, express, router) {
     });
 
     app.get('/login', function(req, res) {
-
         // render the page and pass in any flash data if it exists
         res.render('login.ejs', { message: req.flash('loginMessage') });
     });
@@ -30,7 +28,6 @@ module.exports = function(app, passport, express, router) {
 
     // show the signup form
     app.get('/signup', function(req, res) {
-
         // render the page and pass in any flash data if it exists
         res.render('signup.ejs', { message: req.flash('signupMessage') });
     });
