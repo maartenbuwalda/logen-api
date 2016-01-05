@@ -49,9 +49,22 @@ var ToDoList = React.createClass({
     var url = "http://localhost:8080/users/" + window.user.id + "/tasks"
     $.get(url,
       function(data){
+        var tasks = [];
+        var done = [];
+        console.log(data)
+
+        data.forEach(function(item){
+          if (item.status === "done") {
+            done.push(item)
+          } else {
+            tasks.push(item)
+          }
+        });
+
         self.setState(function(previousState, currentProps) {
           return {
-            tasks: data
+            done: done,
+            tasks: tasks
           };
         });
       }
@@ -75,10 +88,18 @@ var ToDoList = React.createClass({
     })
   },
 
-  _deleteItem(i){
-    var url = "http://localhost:8080/tasks/" + i;
+  _deleteFromToDo(i){
+    this._moveFromList(i, "remove", this.state.tasks);
+    this._deleteItem(i);
+  },
 
-    this._moveFromList(i, "remove");
+  _deleteFromDone(i){
+    this._moveFromList(i, "remove", this.state.done);
+    this._deleteItem(i);
+  },
+
+  _deleteItem(i){
+    var url = "http://localhost:8080/tasks/" + i._id;
 
     $.ajax({
       url: url,
@@ -94,7 +115,7 @@ var ToDoList = React.createClass({
 
     i.status = "done";
 
-    this._moveFromList(i._id, "done");
+    this._moveFromList(i, "done");
 
     $.ajax({
       url: url,
@@ -108,17 +129,37 @@ var ToDoList = React.createClass({
     });
   },
 
-  _moveFromList(i, action){
+  _toDoItem(i){
+    var url = "http://localhost:8080/tasks/" + i._id;
+
+    i.status = "to-do";
+
+    this._moveFromList(i, "to-do");
+
+    $.ajax({
+      url: url,
+      type: "PUT",
+      data: {
+        "status": "to-do"
+      },
+      success: function(result){
+        console.log(result)
+      }
+    });
+  },
+
+  _moveFromList(i, action, target){
     var self = this;
     var count = 0;
     var tasks = this.state.tasks;
     var done = this.state.done;
 
     if(action === "remove"){
-      tasks.forEach(function(item){
-        if (i === item._id) {
-          tasks.splice(count, 1);
+      target.forEach(function(item){
+        if (i._id === item._id) {
+          target.splice(count, 1);
           self.setState({
+            done: done,
             tasks: tasks,
           })
         }
@@ -128,23 +169,31 @@ var ToDoList = React.createClass({
 
     if (action === "done") {
       tasks.forEach(function(item){
-        if (i === item._id) {
-          console.log("ja")
+        if (i._id === item._id) {
           tasks.splice(count, 1);
           done.push(item);
           self.setState({
             tasks: tasks,
             done: done,
           })
-          console.log(tasks, done)
         }
         count++
       })
     }
-  },
 
-  _editItem(i){
-    console.log("Edit this item");
+    if (action === "to-do") {
+      done.forEach(function(item){
+        if (i._id === item._id) {
+          done.splice(count, 1);
+          tasks.push(item);
+          self.setState({
+            tasks: tasks,
+            done: done,
+          })
+        }
+        count++
+      })
+    }
   },
 
   _addItem(e){
@@ -226,25 +275,42 @@ var ToDoList = React.createClass({
             onClick={this._addItem}
           />
         </form>
-      <ul>
-        {this.state.tasks.map(function(item, i){
-          var boundDelete = self._deleteItem.bind(null, item._id)
-          var boundDone = self._doneItem.bind(null, item)
-          var boundEdit = self._editItem.bind(null, item._id)
-          return (
-            <li key={i}>
-              <div>Name: {item.name}</div>
-              <div>Description: {item.description}</div>
-              <div>Importance: {item.importance}</div>
-              <div>Created: {item.time_created}</div>
-              <div>Status: {item.status}</div>
-              <span onClick={boundEdit}> Edit </span>
-              <span onClick={boundDone}> Done </span>
-              <span onClick={boundDelete}> Delete </span>
-            </li>
-          )
-        })}
-      </ul>
+        <h2>To do:</h2>
+        <ul>
+          {this.state.tasks.map(function(item, i){
+            var boundDelete = self._deleteFromToDo.bind(null, item)
+            var boundDone = self._doneItem.bind(null, item)
+            return (
+              <li key={i}>
+                <div>Name: {item.name}</div>
+                <div>Description: {item.description}</div>
+                <div>Importance: {item.importance}</div>
+                <div>Created: {moment(JSON.parse(item.time_created)).utc().format("LLLL")}</div>
+                <div>Status: {item.status}</div>
+                <span onClick={boundDone}> Done </span>
+                <span onClick={boundDelete}> Delete </span>
+              </li>
+            )
+          })}
+        </ul>
+        <h2>Done:</h2>
+        <ul>
+          {this.state.done.map(function(item, i){
+            var boundDelete = self._deleteFromDone.bind(null, item)
+            var boundToDo = self._toDoItem.bind(null, item)
+            return (
+              <li key={i}>
+                <div>Name: {item.name}</div>
+                <div>Description: {item.description}</div>
+                <div>Importance: {item.importance}</div>
+                <div>Created: {moment(JSON.parse(item.time_created)).utc().format("LLLL")}</div>
+                <div>Status: {item.status}</div>
+                <span onClick={boundToDo}> To do </span>
+                <span onClick={boundDelete}> Delete </span>
+              </li>
+            )
+          })}
+        </ul>
       </div>
     )
   }

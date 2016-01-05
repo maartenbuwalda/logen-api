@@ -139,9 +139,22 @@
 	    var self = this;
 	    var url = "http://localhost:8080/users/" + window.user.id + "/tasks";
 	    $.get(url, function (data) {
+	      var tasks = [];
+	      var done = [];
+	      console.log(data);
+
+	      data.forEach(function (item) {
+	        if (item.status === "done") {
+	          done.push(item);
+	        } else {
+	          tasks.push(item);
+	        }
+	      });
+
 	      self.setState(function (previousState, currentProps) {
 	        return {
-	          tasks: data
+	          done: done,
+	          tasks: tasks
 	        };
 	      });
 	    });
@@ -162,10 +175,16 @@
 	      }
 	    });
 	  },
+	  _deleteFromToDo: function _deleteFromToDo(i) {
+	    this._moveFromList(i, "remove", this.state.tasks);
+	    this._deleteItem(i);
+	  },
+	  _deleteFromDone: function _deleteFromDone(i) {
+	    this._moveFromList(i, "remove", this.state.done);
+	    this._deleteItem(i);
+	  },
 	  _deleteItem: function _deleteItem(i) {
-	    var url = "http://localhost:8080/tasks/" + i;
-
-	    this._moveFromList(i, "remove");
+	    var url = "http://localhost:8080/tasks/" + i._id;
 
 	    $.ajax({
 	      url: url,
@@ -180,7 +199,7 @@
 
 	    i.status = "done";
 
-	    this._moveFromList(i._id, "done");
+	    this._moveFromList(i, "done");
 
 	    $.ajax({
 	      url: url,
@@ -193,17 +212,36 @@
 	      }
 	    });
 	  },
-	  _moveFromList: function _moveFromList(i, action) {
+	  _toDoItem: function _toDoItem(i) {
+	    var url = "http://localhost:8080/tasks/" + i._id;
+
+	    i.status = "to-do";
+
+	    this._moveFromList(i, "to-do");
+
+	    $.ajax({
+	      url: url,
+	      type: "PUT",
+	      data: {
+	        "status": "to-do"
+	      },
+	      success: function success(result) {
+	        console.log(result);
+	      }
+	    });
+	  },
+	  _moveFromList: function _moveFromList(i, action, target) {
 	    var self = this;
 	    var count = 0;
 	    var tasks = this.state.tasks;
 	    var done = this.state.done;
 
 	    if (action === "remove") {
-	      tasks.forEach(function (item) {
-	        if (i === item._id) {
-	          tasks.splice(count, 1);
+	      target.forEach(function (item) {
+	        if (i._id === item._id) {
+	          target.splice(count, 1);
 	          self.setState({
+	            done: done,
 	            tasks: tasks
 	          });
 	        }
@@ -213,22 +251,31 @@
 
 	    if (action === "done") {
 	      tasks.forEach(function (item) {
-	        if (i === item._id) {
-	          console.log("ja");
+	        if (i._id === item._id) {
 	          tasks.splice(count, 1);
 	          done.push(item);
 	          self.setState({
 	            tasks: tasks,
 	            done: done
 	          });
-	          console.log(tasks, done);
 	        }
 	        count++;
 	      });
 	    }
-	  },
-	  _editItem: function _editItem(i) {
-	    console.log("Edit this item");
+
+	    if (action === "to-do") {
+	      done.forEach(function (item) {
+	        if (i._id === item._id) {
+	          done.splice(count, 1);
+	          tasks.push(item);
+	          self.setState({
+	            tasks: tasks,
+	            done: done
+	          });
+	        }
+	        count++;
+	      });
+	    }
 	  },
 	  _addItem: function _addItem(e) {
 	    var data = this.state.currentItem;
@@ -308,12 +355,16 @@
 	        })
 	      ),
 	      _react2.default.createElement(
+	        'h2',
+	        null,
+	        'To do:'
+	      ),
+	      _react2.default.createElement(
 	        'ul',
 	        null,
 	        this.state.tasks.map(function (item, i) {
-	          var boundDelete = self._deleteItem.bind(null, item._id);
+	          var boundDelete = self._deleteFromToDo.bind(null, item);
 	          var boundDone = self._doneItem.bind(null, item);
-	          var boundEdit = self._editItem.bind(null, item._id);
 	          return _react2.default.createElement(
 	            'li',
 	            { key: i },
@@ -339,7 +390,7 @@
 	              'div',
 	              null,
 	              'Created: ',
-	              item.time_created
+	              (0, _moment2.default)(JSON.parse(item.time_created)).utc().format("LLLL")
 	            ),
 	            _react2.default.createElement(
 	              'div',
@@ -349,13 +400,65 @@
 	            ),
 	            _react2.default.createElement(
 	              'span',
-	              { onClick: boundEdit },
-	              ' Edit '
+	              { onClick: boundDone },
+	              ' Done '
 	            ),
 	            _react2.default.createElement(
 	              'span',
-	              { onClick: boundDone },
-	              ' Done '
+	              { onClick: boundDelete },
+	              ' Delete '
+	            )
+	          );
+	        })
+	      ),
+	      _react2.default.createElement(
+	        'h2',
+	        null,
+	        'Done:'
+	      ),
+	      _react2.default.createElement(
+	        'ul',
+	        null,
+	        this.state.done.map(function (item, i) {
+	          var boundDelete = self._deleteFromDone.bind(null, item);
+	          var boundToDo = self._toDoItem.bind(null, item);
+	          return _react2.default.createElement(
+	            'li',
+	            { key: i },
+	            _react2.default.createElement(
+	              'div',
+	              null,
+	              'Name: ',
+	              item.name
+	            ),
+	            _react2.default.createElement(
+	              'div',
+	              null,
+	              'Description: ',
+	              item.description
+	            ),
+	            _react2.default.createElement(
+	              'div',
+	              null,
+	              'Importance: ',
+	              item.importance
+	            ),
+	            _react2.default.createElement(
+	              'div',
+	              null,
+	              'Created: ',
+	              (0, _moment2.default)(JSON.parse(item.time_created)).utc().format("LLLL")
+	            ),
+	            _react2.default.createElement(
+	              'div',
+	              null,
+	              'Status: ',
+	              item.status
+	            ),
+	            _react2.default.createElement(
+	              'span',
+	              { onClick: boundToDo },
+	              ' To do '
 	            ),
 	            _react2.default.createElement(
 	              'span',
