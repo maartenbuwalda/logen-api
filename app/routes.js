@@ -154,7 +154,7 @@ module.exports = function(app, passport, express, router) {
                 // task.category = req.body.category;
                 // task.importance = req.body.importance;
                 // task.time_created = req.body.time_created;
-                // task.time_finished = req.body.time_finished;
+                task.time_finished = req.body.time_finished;
                 // task.rating = req.body.rating;
                 task.status = req.body.status;
 

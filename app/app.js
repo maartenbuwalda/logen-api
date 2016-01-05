@@ -74,14 +74,15 @@ var ToDoList = React.createClass({
   _update(){
     // Gets called on every change in the input fields
     this.setState({
-      tasks: this.state.tasks,
-      done: this.state.done,
+      // tasks: this.state.tasks,
+      // done: this.state.done,
       currentItem: {
         item_key: this.state.tasks.length + moment().unix(),
         name: this.refs.name.value,
         description: this.refs.description.value,
         importance: this.refs.importance.value,
         time_created: JSON.stringify(moment()),
+        time_finished: "",
         rating: 0,
         status: "to do",
         user_id: window.user.id,
@@ -113,8 +114,9 @@ var ToDoList = React.createClass({
 
   _doneItem(i, rating){
     var url = "http://localhost:8080/tasks/" + i._id;
-
+    var finished = JSON.stringify(moment())
     i.status = "done";
+    i.time_finished = finished;
     // i.rating = rating;
 
     this._moveFromList(i, "done");
@@ -123,7 +125,8 @@ var ToDoList = React.createClass({
       url: url,
       type: "PUT",
       data: {
-        "rating": i.rating,
+        // "rating": i.rating,
+        "time_finished": finished,
         "status": "done"
       },
       success: function(result){
@@ -318,6 +321,7 @@ var ToDoList = React.createClass({
         <h2>Done:</h2>
         <ul>
           {this.state.done.map(function(item, i){
+            console.log(item)
             var boundDelete = self._deleteFromDone.bind(null, item)
             var boundToDo = self._toDoItem.bind(null, item)
             return (
@@ -326,6 +330,7 @@ var ToDoList = React.createClass({
                 <div>Description: {item.description}</div>
                 <div>Importance: {item.importance}</div>
                 <div>Created: {moment(JSON.parse(item.time_created)).utc().format("LLLL")}</div>
+                <div>Finished: {moment(JSON.parse(item.time_finished)).utc().format("LLLL")}</div>
                 <div>Status: {item.status}</div>
                 <div>Rating: {item.rating}</div>
                 <span onClick={boundToDo}> To do </span>

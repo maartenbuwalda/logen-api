@@ -162,14 +162,15 @@
 	  _update: function _update() {
 	    // Gets called on every change in the input fields
 	    this.setState({
-	      tasks: this.state.tasks,
-	      done: this.state.done,
+	      // tasks: this.state.tasks,
+	      // done: this.state.done,
 	      currentItem: {
 	        item_key: this.state.tasks.length + (0, _moment2.default)().unix(),
 	        name: this.refs.name.value,
 	        description: this.refs.description.value,
 	        importance: this.refs.importance.value,
 	        time_created: JSON.stringify((0, _moment2.default)()),
+	        time_finished: "",
 	        rating: 0,
 	        status: "to do",
 	        user_id: window.user.id
@@ -197,8 +198,9 @@
 	  },
 	  _doneItem: function _doneItem(i, rating) {
 	    var url = "http://localhost:8080/tasks/" + i._id;
-
+	    var finished = JSON.stringify((0, _moment2.default)());
 	    i.status = "done";
+	    i.time_finished = finished;
 	    // i.rating = rating;
 
 	    this._moveFromList(i, "done");
@@ -207,7 +209,8 @@
 	      url: url,
 	      type: "PUT",
 	      data: {
-	        "rating": i.rating,
+	        // "rating": i.rating,
+	        "time_finished": finished,
 	        "status": "done"
 	      },
 	      success: function success(result) {
@@ -439,6 +442,7 @@
 	        'ul',
 	        null,
 	        this.state.done.map(function (item, i) {
+	          console.log(item);
 	          var boundDelete = self._deleteFromDone.bind(null, item);
 	          var boundToDo = self._toDoItem.bind(null, item);
 	          return _react2.default.createElement(
@@ -467,6 +471,12 @@
 	              null,
 	              'Created: ',
 	              (0, _moment2.default)(JSON.parse(item.time_created)).utc().format("LLLL")
+	            ),
+	            _react2.default.createElement(
+	              'div',
+	              null,
+	              'Finished: ',
+	              (0, _moment2.default)(JSON.parse(item.time_finished)).utc().format("LLLL")
 	            ),
 	            _react2.default.createElement(
 	              'div',
