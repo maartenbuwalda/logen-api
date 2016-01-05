@@ -82,6 +82,7 @@ var ToDoList = React.createClass({
         description: this.refs.description.value,
         importance: this.refs.importance.value,
         time_created: JSON.stringify(moment()),
+        rating: 0,
         status: "to do",
         user_id: window.user.id,
       }
@@ -110,10 +111,11 @@ var ToDoList = React.createClass({
     });
   },
 
-  _doneItem(i){
+  _doneItem(i, rating){
     var url = "http://localhost:8080/tasks/" + i._id;
 
     i.status = "done";
+    // i.rating = rating;
 
     this._moveFromList(i, "done");
 
@@ -121,6 +123,7 @@ var ToDoList = React.createClass({
       url: url,
       type: "PUT",
       data: {
+        "rating": i.rating,
         "status": "done"
       },
       success: function(result){
@@ -203,7 +206,8 @@ var ToDoList = React.createClass({
     var filledIn = (
       document.getElementById('task-name').value !== "" &&
       document.getElementById('task-description').value !== "" &&
-      document.getElementById('task-importance').value !== ""
+      document.getElementById('task-importance').value <= 10 &&
+      document.getElementById('task-importance').value >= 0
     );
 
     if (filledIn){
@@ -230,6 +234,8 @@ var ToDoList = React.createClass({
 
       // Renew the list to get the id of the new item so it can be deleted
       this._getItemList();
+    } else {
+      console.log("error")
     }
   },
 
@@ -262,6 +268,8 @@ var ToDoList = React.createClass({
             className="task-input"
             id="task-importance"
             type="number"
+            min="0"
+            max="10"
             ref="importance"
             onChange={this._update}
             value={this.props.importance}
@@ -280,6 +288,7 @@ var ToDoList = React.createClass({
           {this.state.tasks.map(function(item, i){
             var boundDelete = self._deleteFromToDo.bind(null, item)
             var boundDone = self._doneItem.bind(null, item)
+
             return (
               <li key={i}>
                 <div>Name: {item.name}</div>
@@ -287,7 +296,20 @@ var ToDoList = React.createClass({
                 <div>Importance: {item.importance}</div>
                 <div>Created: {moment(JSON.parse(item.time_created)).utc().format("LLLL")}</div>
                 <div>Status: {item.status}</div>
-                <span onClick={boundDone}> Done </span>
+                <form>
+                  <input
+                    type="number"
+                    min="0"
+                    max="10"
+                    required
+                  />
+                  <input
+                    type="submit"
+                    value="Done"
+                    id="task-done"
+                    onClick={boundDone}
+                  />
+                </form>
                 <span onClick={boundDelete}> Delete </span>
               </li>
             )
@@ -305,6 +327,7 @@ var ToDoList = React.createClass({
                 <div>Importance: {item.importance}</div>
                 <div>Created: {moment(JSON.parse(item.time_created)).utc().format("LLLL")}</div>
                 <div>Status: {item.status}</div>
+                <div>Rating: {item.rating}</div>
                 <span onClick={boundToDo}> To do </span>
                 <span onClick={boundDelete}> Delete </span>
               </li>

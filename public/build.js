@@ -170,6 +170,7 @@
 	        description: this.refs.description.value,
 	        importance: this.refs.importance.value,
 	        time_created: JSON.stringify((0, _moment2.default)()),
+	        rating: 0,
 	        status: "to do",
 	        user_id: window.user.id
 	      }
@@ -194,10 +195,11 @@
 	      }
 	    });
 	  },
-	  _doneItem: function _doneItem(i) {
+	  _doneItem: function _doneItem(i, rating) {
 	    var url = "http://localhost:8080/tasks/" + i._id;
 
 	    i.status = "done";
+	    // i.rating = rating;
 
 	    this._moveFromList(i, "done");
 
@@ -205,6 +207,7 @@
 	      url: url,
 	      type: "PUT",
 	      data: {
+	        "rating": i.rating,
 	        "status": "done"
 	      },
 	      success: function success(result) {
@@ -281,7 +284,7 @@
 	    var data = this.state.currentItem;
 	    var url = "http://localhost:8080/tasks";
 	    var tasks = this.state.tasks;
-	    var filledIn = document.getElementById('task-name').value !== "" && document.getElementById('task-description').value !== "" && document.getElementById('task-importance').value !== "";
+	    var filledIn = document.getElementById('task-name').value !== "" && document.getElementById('task-description').value !== "" && document.getElementById('task-importance').value <= 10 && document.getElementById('task-importance').value >= 0;
 
 	    if (filledIn) {
 	      tasks.push(this.state.currentItem);
@@ -307,6 +310,8 @@
 
 	      // Renew the list to get the id of the new item so it can be deleted
 	      this._getItemList();
+	    } else {
+	      console.log("error");
 	    }
 	  },
 	  render: function render() {
@@ -341,6 +346,8 @@
 	          className: 'task-input',
 	          id: 'task-importance',
 	          type: 'number',
+	          min: '0',
+	          max: '10',
 	          ref: 'importance',
 	          onChange: this._update,
 	          value: this.props.importance,
@@ -365,6 +372,7 @@
 	        this.state.tasks.map(function (item, i) {
 	          var boundDelete = self._deleteFromToDo.bind(null, item);
 	          var boundDone = self._doneItem.bind(null, item);
+
 	          return _react2.default.createElement(
 	            'li',
 	            { key: i },
@@ -399,9 +407,20 @@
 	              item.status
 	            ),
 	            _react2.default.createElement(
-	              'span',
-	              { onClick: boundDone },
-	              ' Done '
+	              'form',
+	              null,
+	              _react2.default.createElement('input', {
+	                type: 'number',
+	                min: '0',
+	                max: '10',
+	                required: true
+	              }),
+	              _react2.default.createElement('input', {
+	                type: 'submit',
+	                value: 'Done',
+	                id: 'task-done',
+	                onClick: boundDone
+	              })
 	            ),
 	            _react2.default.createElement(
 	              'span',
@@ -454,6 +473,12 @@
 	              null,
 	              'Status: ',
 	              item.status
+	            ),
+	            _react2.default.createElement(
+	              'div',
+	              null,
+	              'Rating: ',
+	              item.rating
 	            ),
 	            _react2.default.createElement(
 	              'span',
