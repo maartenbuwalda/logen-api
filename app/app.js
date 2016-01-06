@@ -74,8 +74,6 @@ var ToDoList = React.createClass({
   _update(){
     // Gets called on every change in the input fields
     this.setState({
-      // tasks: this.state.tasks,
-      // done: this.state.done,
       currentItem: {
         item_key: this.state.tasks.length + moment().unix(),
         name: this.refs.name.value,
@@ -83,8 +81,8 @@ var ToDoList = React.createClass({
         importance: this.refs.importance.value,
         time_created: JSON.stringify(moment()),
         time_finished: "",
-        rating: 0,
-        status: "to do",
+        rating: "",
+        status: "to-do",
         user_id: window.user.id,
       }
     })
@@ -112,12 +110,11 @@ var ToDoList = React.createClass({
     });
   },
 
-  _doneItem(i, rating){
+  _doneItem(i){
     var url = "http://localhost:8080/tasks/" + i._id;
     var finished = JSON.stringify(moment())
     i.status = "done";
     i.time_finished = finished;
-    // i.rating = rating;
 
     this._moveFromList(i, "done");
 
@@ -125,7 +122,7 @@ var ToDoList = React.createClass({
       url: url,
       type: "PUT",
       data: {
-        // "rating": i.rating,
+        "rating": i.rating,
         "time_finished": finished,
         "status": "done"
       },
@@ -289,59 +286,92 @@ var ToDoList = React.createClass({
         <h2>To do:</h2>
         <ul>
           {this.state.tasks.map(function(item, i){
-            var boundDelete = self._deleteFromToDo.bind(null, item)
-            var boundDone = self._doneItem.bind(null, item)
-
-            return (
-              <li key={i}>
-                <div>Name: {item.name}</div>
-                <div>Description: {item.description}</div>
-                <div>Importance: {item.importance}</div>
-                <div>Created: {moment(JSON.parse(item.time_created)).utc().format("LLLL")}</div>
-                <div>Status: {item.status}</div>
-                <form>
-                  <input
-                    type="number"
-                    min="0"
-                    max="10"
-                    required
-                  />
-                  <input
-                    type="submit"
-                    value="Done"
-                    id="task-done"
-                    onClick={boundDone}
-                  />
-                </form>
-                <span onClick={boundDelete}> Delete </span>
-              </li>
-            )
+            return <ToDoItem delete={self._deleteFromToDo} move={self._doneItem} data={item} key={i}/>
           })}
         </ul>
         <h2>Done:</h2>
         <ul>
           {this.state.done.map(function(item, i){
-            console.log(item)
-            var boundDelete = self._deleteFromDone.bind(null, item)
-            var boundToDo = self._toDoItem.bind(null, item)
-            return (
-              <li key={i}>
-                <div>Name: {item.name}</div>
-                <div>Description: {item.description}</div>
-                <div>Importance: {item.importance}</div>
-                <div>Created: {moment(JSON.parse(item.time_created)).utc().format("LLLL")}</div>
-                <div>Finished: {moment(JSON.parse(item.time_finished)).utc().format("LLLL")}</div>
-                <div>Status: {item.status}</div>
-                <div>Rating: {item.rating}</div>
-                <span onClick={boundToDo}> To do </span>
-                <span onClick={boundDelete}> Delete </span>
-              </li>
-            )
+            return <ToDoItem delete={self._deleteFromDone} move={self._toDoItem} data={item} key={i}/>
           })}
         </ul>
       </div>
     )
   }
 });
+
+var ToDoItem = React.createClass({
+  getInitialState(){
+    return this.props.data
+  },
+
+  _update(e){
+    // this.setState({
+    //   rating: e.target.value
+    // })
+  },
+
+  render(){
+    var actions;
+    var boundDelete = this.props.delete.bind(null, this.props.data)
+    if (this.props.data.status === "to-do") {
+      actions = <ToDoActions move={this.props.move} update={this._update} data={this.props.data} />;
+    } else {
+      actions = <DoneActions move={this.props.move} update={this._update} data={this.props.data} />;
+    }
+
+    return (
+      <li key={this.props.key}>
+        <div>Name: {this.props.data.name}</div>
+        <div>Description: {this.props.data.description}</div>
+        <div>Importance: {this.props.data.importance}</div>
+        <div>Created: {moment(JSON.parse(this.props.data.time_created)).utc().format("LLLL")}</div>
+        <div>Status: {this.props.data.status}</div>
+        {actions}
+        <span onClick={boundDelete}> Delete </span>
+      </li>
+    )
+  }
+});
+
+
+var ToDoActions = React.createClass({
+  render(){
+    var boundDone = this.props.move.bind(null, this.props.data)
+    var boundUpdate = this.props.update.bind(null, this.props.data)
+    return (
+      <form>
+        <input
+          type="number"
+          min="0"
+          max="10"
+          value={this.props.data.rating}
+          onChange={boundUpdate}
+          required
+        />
+        <input
+          type="submit"
+          value="Done"
+          id="task-done"
+          onClick={boundDone}
+        />
+      </form>
+    )
+  }
+});
+
+var DoneActions = React.createClass({
+  render(){
+    var boundToDo = this.props.move.bind(null, this.props.data)
+    return (
+      <div>
+        <div>Finished: {moment(JSON.parse(this.props.data.time_finished)).utc().format("LLLL")}</div>
+        <div>Rating: {this.props.data.rating}</div>
+        <span onClick={boundToDo}> To do </span>
+      </div>
+    )
+  }
+});
+
 
 ReactDOM.render(<App/>, document.getElementById('content'));

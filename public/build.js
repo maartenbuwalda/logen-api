@@ -162,8 +162,6 @@
 	  _update: function _update() {
 	    // Gets called on every change in the input fields
 	    this.setState({
-	      // tasks: this.state.tasks,
-	      // done: this.state.done,
 	      currentItem: {
 	        item_key: this.state.tasks.length + (0, _moment2.default)().unix(),
 	        name: this.refs.name.value,
@@ -171,8 +169,8 @@
 	        importance: this.refs.importance.value,
 	        time_created: JSON.stringify((0, _moment2.default)()),
 	        time_finished: "",
-	        rating: 0,
-	        status: "to do",
+	        rating: "",
+	        status: "to-do",
 	        user_id: window.user.id
 	      }
 	    });
@@ -196,12 +194,11 @@
 	      }
 	    });
 	  },
-	  _doneItem: function _doneItem(i, rating) {
+	  _doneItem: function _doneItem(i) {
 	    var url = "http://localhost:8080/tasks/" + i._id;
 	    var finished = JSON.stringify((0, _moment2.default)());
 	    i.status = "done";
 	    i.time_finished = finished;
-	    // i.rating = rating;
 
 	    this._moveFromList(i, "done");
 
@@ -209,7 +206,7 @@
 	      url: url,
 	      type: "PUT",
 	      data: {
-	        // "rating": i.rating,
+	        "rating": i.rating,
 	        "time_finished": finished,
 	        "status": "done"
 	      },
@@ -373,64 +370,7 @@
 	        'ul',
 	        null,
 	        this.state.tasks.map(function (item, i) {
-	          var boundDelete = self._deleteFromToDo.bind(null, item);
-	          var boundDone = self._doneItem.bind(null, item);
-
-	          return _react2.default.createElement(
-	            'li',
-	            { key: i },
-	            _react2.default.createElement(
-	              'div',
-	              null,
-	              'Name: ',
-	              item.name
-	            ),
-	            _react2.default.createElement(
-	              'div',
-	              null,
-	              'Description: ',
-	              item.description
-	            ),
-	            _react2.default.createElement(
-	              'div',
-	              null,
-	              'Importance: ',
-	              item.importance
-	            ),
-	            _react2.default.createElement(
-	              'div',
-	              null,
-	              'Created: ',
-	              (0, _moment2.default)(JSON.parse(item.time_created)).utc().format("LLLL")
-	            ),
-	            _react2.default.createElement(
-	              'div',
-	              null,
-	              'Status: ',
-	              item.status
-	            ),
-	            _react2.default.createElement(
-	              'form',
-	              null,
-	              _react2.default.createElement('input', {
-	                type: 'number',
-	                min: '0',
-	                max: '10',
-	                required: true
-	              }),
-	              _react2.default.createElement('input', {
-	                type: 'submit',
-	                value: 'Done',
-	                id: 'task-done',
-	                onClick: boundDone
-	              })
-	            ),
-	            _react2.default.createElement(
-	              'span',
-	              { onClick: boundDelete },
-	              ' Delete '
-	            )
-	          );
+	          return _react2.default.createElement(ToDoItem, { 'delete': self._deleteFromToDo, move: self._doneItem, data: item, key: i });
 	        })
 	      ),
 	      _react2.default.createElement(
@@ -442,66 +382,124 @@
 	        'ul',
 	        null,
 	        this.state.done.map(function (item, i) {
-	          console.log(item);
-	          var boundDelete = self._deleteFromDone.bind(null, item);
-	          var boundToDo = self._toDoItem.bind(null, item);
-	          return _react2.default.createElement(
-	            'li',
-	            { key: i },
-	            _react2.default.createElement(
-	              'div',
-	              null,
-	              'Name: ',
-	              item.name
-	            ),
-	            _react2.default.createElement(
-	              'div',
-	              null,
-	              'Description: ',
-	              item.description
-	            ),
-	            _react2.default.createElement(
-	              'div',
-	              null,
-	              'Importance: ',
-	              item.importance
-	            ),
-	            _react2.default.createElement(
-	              'div',
-	              null,
-	              'Created: ',
-	              (0, _moment2.default)(JSON.parse(item.time_created)).utc().format("LLLL")
-	            ),
-	            _react2.default.createElement(
-	              'div',
-	              null,
-	              'Finished: ',
-	              (0, _moment2.default)(JSON.parse(item.time_finished)).utc().format("LLLL")
-	            ),
-	            _react2.default.createElement(
-	              'div',
-	              null,
-	              'Status: ',
-	              item.status
-	            ),
-	            _react2.default.createElement(
-	              'div',
-	              null,
-	              'Rating: ',
-	              item.rating
-	            ),
-	            _react2.default.createElement(
-	              'span',
-	              { onClick: boundToDo },
-	              ' To do '
-	            ),
-	            _react2.default.createElement(
-	              'span',
-	              { onClick: boundDelete },
-	              ' Delete '
-	            )
-	          );
+	          return _react2.default.createElement(ToDoItem, { 'delete': self._deleteFromDone, move: self._toDoItem, data: item, key: i });
 	        })
+	      )
+	    );
+	  }
+	});
+
+	var ToDoItem = _react2.default.createClass({
+	  displayName: 'ToDoItem',
+	  getInitialState: function getInitialState() {
+	    return this.props.data;
+	  },
+	  _update: function _update(e) {
+	    // this.setState({
+	    //   rating: e.target.value
+	    // })
+	  },
+	  render: function render() {
+	    var actions;
+	    var boundDelete = this.props.delete.bind(null, this.props.data);
+	    if (this.props.data.status === "to-do") {
+	      actions = _react2.default.createElement(ToDoActions, { move: this.props.move, update: this._update, data: this.props.data });
+	    } else {
+	      actions = _react2.default.createElement(DoneActions, { move: this.props.move, update: this._update, data: this.props.data });
+	    }
+
+	    return _react2.default.createElement(
+	      'li',
+	      { key: this.props.key },
+	      _react2.default.createElement(
+	        'div',
+	        null,
+	        'Name: ',
+	        this.props.data.name
+	      ),
+	      _react2.default.createElement(
+	        'div',
+	        null,
+	        'Description: ',
+	        this.props.data.description
+	      ),
+	      _react2.default.createElement(
+	        'div',
+	        null,
+	        'Importance: ',
+	        this.props.data.importance
+	      ),
+	      _react2.default.createElement(
+	        'div',
+	        null,
+	        'Created: ',
+	        (0, _moment2.default)(JSON.parse(this.props.data.time_created)).utc().format("LLLL")
+	      ),
+	      _react2.default.createElement(
+	        'div',
+	        null,
+	        'Status: ',
+	        this.props.data.status
+	      ),
+	      actions,
+	      _react2.default.createElement(
+	        'span',
+	        { onClick: boundDelete },
+	        ' Delete '
+	      )
+	    );
+	  }
+	});
+
+	var ToDoActions = _react2.default.createClass({
+	  displayName: 'ToDoActions',
+	  render: function render() {
+	    var boundDone = this.props.move.bind(null, this.props.data);
+	    var boundUpdate = this.props.update.bind(null, this.props.data);
+	    return _react2.default.createElement(
+	      'form',
+	      null,
+	      _react2.default.createElement('input', {
+	        type: 'number',
+	        min: '0',
+	        max: '10',
+	        value: this.props.data.rating,
+	        onChange: boundUpdate,
+	        required: true
+	      }),
+	      _react2.default.createElement('input', {
+	        type: 'submit',
+	        value: 'Done',
+	        id: 'task-done',
+	        onClick: boundDone
+	      })
+	    );
+	  }
+	});
+
+	var DoneActions = _react2.default.createClass({
+	  displayName: 'DoneActions',
+	  render: function render() {
+	    var boundToDo = this.props.move.bind(null, this.props.data);
+	    return _react2.default.createElement(
+	      'div',
+	      null,
+	      _react2.default.createElement(
+	        'div',
+	        null,
+	        'Finished: ',
+	        (0, _moment2.default)(JSON.parse(this.props.data.time_finished)).utc().format("LLLL")
+	      ),
+	      _react2.default.createElement(
+	        'div',
+	        null,
+	        'Rating: ',
+	        this.props.data.rating
+	      ),
+	      _react2.default.createElement(
+	        'span',
+	        { onClick: boundToDo },
+	        ' To do '
 	      )
 	    );
 	  }
