@@ -1,5 +1,8 @@
 # logen-api
 
+Trello:
+- https://trello.com/b/OrakaCIf/logen
+
 Getting started
 - install MongoDB
 - install NodeJS
