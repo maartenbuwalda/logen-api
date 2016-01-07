@@ -5,7 +5,7 @@ import moment from 'moment';
 var App = React.createClass({
 
   getInitialState(){
-    this._getItemList();
+    this._getData();
     return {
       done: [],
       tasks: []
@@ -374,6 +374,9 @@ var DoneActions = React.createClass({
 });
 
 var Overview = React.createClass({
+  componentWillReceiveProps(){
+    console.log("sajkhaskjhfjkashfjka")
+  },
   render(){
     return (
       <div>Test</div>
