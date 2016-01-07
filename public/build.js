@@ -135,13 +135,14 @@
 	    });
 	  },
 
+	  newItem: {},
+
 	  _getItemList: function _getItemList() {
 	    var self = this;
 	    var url = "http://localhost:8080/users/" + window.user.id + "/tasks";
 	    $.get(url, function (data) {
 	      var tasks = [];
 	      var done = [];
-	      console.log(data);
 
 	      data.forEach(function (item) {
 	        if (item.status === "done") {
@@ -161,19 +162,16 @@
 	  },
 	  _update: function _update() {
 	    // Gets called on every change in the input fields
-	    this.setState({
-	      currentItem: {
-	        item_key: this.state.tasks.length + (0, _moment2.default)().unix(),
-	        name: this.refs.name.value,
-	        description: this.refs.description.value,
-	        importance: this.refs.importance.value,
-	        time_created: JSON.stringify((0, _moment2.default)()),
-	        time_finished: "",
-	        rating: "",
-	        status: "to-do",
-	        user_id: window.user.id
-	      }
-	    });
+	    this.newItem = {
+	      item_key: this.state.tasks.length + (0, _moment2.default)().unix(),
+	      name: this.refs.name.value,
+	      description: this.refs.description.value,
+	      importance: this.refs.importance.value,
+	      time_created: JSON.stringify((0, _moment2.default)()),
+	      rating: "",
+	      status: "to-do",
+	      user_id: window.user.id
+	    };
 	  },
 	  _deleteFromToDo: function _deleteFromToDo(i) {
 	    this._moveFromList(i, "remove", this.state.tasks);
@@ -195,22 +193,25 @@
 	    });
 	  },
 	  _doneItem: function _doneItem(i) {
+	    var self = this;
 	    var url = "http://localhost:8080/tasks/" + i._id;
 	    var finished = JSON.stringify((0, _moment2.default)());
+
 	    i.status = "done";
 	    i.time_finished = finished;
 
-	    this._moveFromList(i, "done");
+	    console.log(i);
 
 	    $.ajax({
 	      url: url,
 	      type: "PUT",
 	      data: {
 	        "rating": i.rating,
-	        "time_finished": finished,
-	        "status": "done"
+	        "time_finished": i.time_finished,
+	        "status": i.status
 	      },
 	      success: function success(result) {
+	        self._moveFromList(i, "done");
 	        console.log(result);
 	      }
 	    });
@@ -281,13 +282,13 @@
 	    }
 	  },
 	  _addItem: function _addItem(e) {
-	    var data = this.state.currentItem;
+	    var data = this.newItem;
 	    var url = "http://localhost:8080/tasks";
 	    var tasks = this.state.tasks;
 	    var filledIn = document.getElementById('task-name').value !== "" && document.getElementById('task-description').value !== "" && document.getElementById('task-importance').value <= 10 && document.getElementById('task-importance').value >= 0;
 
 	    if (filledIn) {
-	      tasks.push(this.state.currentItem);
+	      tasks.push(this.newItem);
 
 	      this.setState({
 	        tasks: tasks
@@ -313,6 +314,7 @@
 	    } else {
 	      console.log("error");
 	    }
+	    return false;
 	  },
 	  render: function render() {
 	    var self = this;
@@ -391,21 +393,17 @@
 
 	var ToDoItem = _react2.default.createClass({
 	  displayName: 'ToDoItem',
-	  getInitialState: function getInitialState() {
-	    return this.props.data;
-	  },
-	  _update: function _update(e) {
-	    // this.setState({
-	    //   rating: e.target.value
-	    // })
+	  _setRating: function _setRating(rating) {
+	    this.props.data.rating = rating;
 	  },
 	  render: function render() {
 	    var actions;
 	    var boundDelete = this.props.delete.bind(null, this.props.data);
 	    if (this.props.data.status === "to-do") {
-	      actions = _react2.default.createElement(ToDoActions, { move: this.props.move, update: this._update, data: this.props.data });
-	    } else {
-	      actions = _react2.default.createElement(DoneActions, { move: this.props.move, update: this._update, data: this.props.data });
+	      actions = _react2.default.createElement(ToDoActions, { move: this.props.move, setRating: this._setRating, data: this.props.data });
+	    }
+	    if (this.props.data.status === "done") {
+	      actions = _react2.default.createElement(DoneActions, { move: this.props.move, setRating: this._setRating, data: this.props.data });
 	    }
 
 	    return _react2.default.createElement(
@@ -453,9 +451,18 @@
 
 	var ToDoActions = _react2.default.createClass({
 	  displayName: 'ToDoActions',
+	  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
+	    this.setState({
+	      data: nextProps
+	    });
+	  },
+	  _update: function _update(e) {
+	    var rating = e.target.value;
+	    this.props.setRating(rating);
+	  },
 	  render: function render() {
 	    var boundDone = this.props.move.bind(null, this.props.data);
-	    var boundUpdate = this.props.update.bind(null, this.props.data);
+
 	    return _react2.default.createElement(
 	      'form',
 	      null,
@@ -463,8 +470,7 @@
 	        type: 'number',
 	        min: '0',
 	        max: '10',
-	        value: this.props.data.rating,
-	        onChange: boundUpdate,
+	        onChange: this._update,
 	        required: true
 	      }),
 	      _react2.default.createElement('input', {

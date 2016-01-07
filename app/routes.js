@@ -148,14 +148,9 @@ module.exports = function(app, passport, express, router) {
                 if (err)
                     res.send(err);
 
-                // task.user_id = req.body.user_id;
-                // task.name = req.body.name;
-                // task.description = req.body.description;
-                // task.category = req.body.category;
-                // task.importance = req.body.importance;
-                // task.time_created = req.body.time_created;
+                console.log(req.body)
                 task.time_finished = req.body.time_finished;
-                // task.rating = req.body.rating;
+                task.rating = req.body.rating;
                 task.status = req.body.status;
 
                 // save the task

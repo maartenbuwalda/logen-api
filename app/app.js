@@ -44,6 +44,8 @@ var ToDoList = React.createClass({
     });
   },
 
+  newItem: {},
+
   _getItemList(){
     var self = this;
     var url = "http://localhost:8080/users/" + window.user.id + "/tasks"
@@ -51,7 +53,6 @@ var ToDoList = React.createClass({
       function(data){
         var tasks = [];
         var done = [];
-        console.log(data)
 
         data.forEach(function(item){
           if (item.status === "done") {
@@ -73,19 +74,16 @@ var ToDoList = React.createClass({
 
   _update(){
     // Gets called on every change in the input fields
-    this.setState({
-      currentItem: {
-        item_key: this.state.tasks.length + moment().unix(),
-        name: this.refs.name.value,
-        description: this.refs.description.value,
-        importance: this.refs.importance.value,
-        time_created: JSON.stringify(moment()),
-        time_finished: "",
-        rating: "",
-        status: "to-do",
-        user_id: window.user.id,
-      }
-    })
+    this.newItem = {
+      item_key: this.state.tasks.length + moment().unix(),
+      name: this.refs.name.value,
+      description: this.refs.description.value,
+      importance: this.refs.importance.value,
+      time_created: JSON.stringify(moment()),
+      rating: "",
+      status: "to-do",
+      user_id: window.user.id,
+    }
   },
 
   _deleteFromToDo(i){
@@ -111,22 +109,25 @@ var ToDoList = React.createClass({
   },
 
   _doneItem(i){
+    var self = this;
     var url = "http://localhost:8080/tasks/" + i._id;
     var finished = JSON.stringify(moment())
+
     i.status = "done";
     i.time_finished = finished;
 
-    this._moveFromList(i, "done");
+    console.log(i)
 
     $.ajax({
       url: url,
       type: "PUT",
       data: {
         "rating": i.rating,
-        "time_finished": finished,
-        "status": "done"
+        "time_finished": i.time_finished,
+        "status": i.status
       },
       success: function(result){
+        self._moveFromList(i, "done");
         console.log(result)
       }
     });
@@ -200,7 +201,7 @@ var ToDoList = React.createClass({
   },
 
   _addItem(e){
-    var data = this.state.currentItem;
+    var data = this.newItem;
     var url = "http://localhost:8080/tasks"
     var tasks = this.state.tasks;
     var filledIn = (
@@ -211,7 +212,7 @@ var ToDoList = React.createClass({
     );
 
     if (filledIn){
-      tasks.push(this.state.currentItem);
+      tasks.push(this.newItem);
 
       this.setState({
         tasks: tasks
@@ -237,6 +238,7 @@ var ToDoList = React.createClass({
     } else {
       console.log("error")
     }
+    return false;
   },
 
   render(){
@@ -301,23 +303,19 @@ var ToDoList = React.createClass({
 });
 
 var ToDoItem = React.createClass({
-  getInitialState(){
-    return this.props.data
-  },
 
-  _update(e){
-    // this.setState({
-    //   rating: e.target.value
-    // })
+  _setRating(rating){
+    this.props.data.rating = rating;
   },
 
   render(){
     var actions;
     var boundDelete = this.props.delete.bind(null, this.props.data)
     if (this.props.data.status === "to-do") {
-      actions = <ToDoActions move={this.props.move} update={this._update} data={this.props.data} />;
-    } else {
-      actions = <DoneActions move={this.props.move} update={this._update} data={this.props.data} />;
+      actions = <ToDoActions move={this.props.move} setRating={this._setRating} data={this.props.data} />;
+    }
+    if (this.props.data.status === "done") {
+      actions = <DoneActions move={this.props.move} setRating={this._setRating} data={this.props.data} />;
     }
 
     return (
@@ -336,17 +334,28 @@ var ToDoItem = React.createClass({
 
 
 var ToDoActions = React.createClass({
+
+  componentWillReceiveProps(nextProps){
+    this.setState({
+      data: nextProps
+    })
+  },
+
+  _update(e){
+    var rating = e.target.value;
+    this.props.setRating(rating);
+  },
+
   render(){
     var boundDone = this.props.move.bind(null, this.props.data)
-    var boundUpdate = this.props.update.bind(null, this.props.data)
+
     return (
       <form>
         <input
           type="number"
           min="0"
           max="10"
-          value={this.props.data.rating}
-          onChange={boundUpdate}
+          onChange={this._update}
           required
         />
         <input
@@ -372,6 +381,5 @@ var DoneActions = React.createClass({
     )
   }
 });
-
 
 ReactDOM.render(<App/>, document.getElementById('content'));

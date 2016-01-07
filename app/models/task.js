@@ -7,11 +7,11 @@ var TaskSchema   = new Schema({
     name: String,
     description: String,
     category: String,
-    importance: Number,
+    importance: String,
     time_created: String,
     time_finished: String,
     status: String,
-    rating: Number,
+    rating: String,
     archived: Boolean
 });
 
