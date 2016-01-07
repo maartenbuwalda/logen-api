@@ -4,30 +4,6 @@ import moment from 'moment';
 
 var App = React.createClass({
 
-  render: function(){
-    return (
-      <div>
-        <h1>Hello {window.user.name}</h1>
-        <Profile/>
-        <ToDoList/>
-      </div>
-    );
-  }
-});
-
-var Profile = React.createClass({
-  render() {
-    return (
-      <div>
-        <a href="/logout">Logout</a>
-        <p><strong>Name</strong>: {window.user.name}</p>
-      </div>
-    )
-  }
-});
-
-var ToDoList = React.createClass({
-
   getInitialState(){
     this._getItemList();
     return {
@@ -36,17 +12,7 @@ var ToDoList = React.createClass({
     };
   },
 
-  componentWillReceiveProps: function(nextProps) {
-    // Gets called when receiving the tasks from the ajax request
-    this.setState({
-      done: this.state.done,
-      tasks: nextProps.tasks
-    });
-  },
-
-  newItem: {},
-
-  _getItemList(){
+  _getData(){
     var self = this;
     var url = "http://localhost:8080/users/" + window.user.id + "/tasks"
     $.get(url,
@@ -72,10 +38,37 @@ var ToDoList = React.createClass({
     )
   },
 
+  render: function(){
+    return (
+      <div>
+        <h1>Hello {window.user.name}</h1>
+        <Profile/>
+        <ToDoList getData={this._getData} data={this.state}/>
+        <Overview getData={this._getData} data={this.state}/>
+      </div>
+    );
+  }
+});
+
+var Profile = React.createClass({
+  render() {
+    return (
+      <div>
+        <a href="/logout">Logout</a>
+        <p><strong>Name</strong>: {window.user.name}</p>
+      </div>
+    )
+  }
+});
+
+var ToDoList = React.createClass({
+
+  newItem: {},
+
   _update(){
     // Gets called on every change in the input fields
     this.newItem = {
-      item_key: this.state.tasks.length + moment().unix(),
+      item_key: this.props.data.tasks.length + moment().unix(),
       name: this.refs.name.value,
       description: this.refs.description.value,
       importance: this.refs.importance.value,
@@ -87,12 +80,12 @@ var ToDoList = React.createClass({
   },
 
   _deleteFromToDo(i){
-    this._moveFromList(i, "remove", this.state.tasks);
+    this._moveFromList(i, "remove", this.props.data.tasks);
     this._deleteItem(i);
   },
 
   _deleteFromDone(i){
-    this._moveFromList(i, "remove", this.state.done);
+    this._moveFromList(i, "remove", this.props.data.done);
     this._deleteItem(i);
   },
 
@@ -153,8 +146,8 @@ var ToDoList = React.createClass({
   _moveFromList(i, action, target){
     var self = this;
     var count = 0;
-    var tasks = this.state.tasks;
-    var done = this.state.done;
+    var tasks = this.props.data.tasks;
+    var done = this.props.data.done;
 
     if(action === "remove"){
       target.forEach(function(item){
@@ -201,7 +194,7 @@ var ToDoList = React.createClass({
   _addItem(e){
     var data = this.newItem;
     var url = "http://localhost:8080/tasks"
-    var tasks = this.state.tasks;
+    var tasks = this.props.data.tasks;
     var filledIn = (
       document.getElementById('task-name').value !== "" &&
       document.getElementById('task-description').value !== "" &&
@@ -232,7 +225,7 @@ var ToDoList = React.createClass({
       }, 10);
 
       // Renew the list to get the id of the new item so it can be deleted
-      this._getItemList();
+      this.props.getData();
     } else {
       console.log("error")
     }
@@ -285,13 +278,13 @@ var ToDoList = React.createClass({
         </form>
         <h2>To do:</h2>
         <ul>
-          {this.state.tasks.map(function(item, i){
+          {this.props.data.tasks.map(function(item, i){
             return <ToDoItem delete={self._deleteFromToDo} move={self._doneItem} data={item} key={i}/>
           })}
         </ul>
         <h2>Done:</h2>
         <ul>
-          {this.state.done.map(function(item, i){
+          {this.props.data.done.map(function(item, i){
             return <ToDoItem delete={self._deleteFromDone} move={self._toDoItem} data={item} key={i}/>
           })}
         </ul>
@@ -380,4 +373,12 @@ var DoneActions = React.createClass({
   }
 });
 
-ReactDOM.render(<App/>, document.getElementById('content'));
+var Overview = React.createClass({
+  render(){
+    return (
+      <div>Test</div>
+    )
+  }
+})
+
+ReactDOM.render(<App/>, document.getElementById('list'));

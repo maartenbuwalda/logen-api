@@ -74,6 +74,36 @@
 
 	var App = _react2.default.createClass({
 	  displayName: 'App',
+	  getInitialState: function getInitialState() {
+	    this._getItemList();
+	    return {
+	      done: [],
+	      tasks: []
+	    };
+	  },
+	  _getData: function _getData() {
+	    var self = this;
+	    var url = "http://localhost:8080/users/" + window.user.id + "/tasks";
+	    $.get(url, function (data) {
+	      var tasks = [];
+	      var done = [];
+
+	      data.forEach(function (item) {
+	        if (item.status === "done") {
+	          done.push(item);
+	        } else {
+	          tasks.push(item);
+	        }
+	      });
+
+	      self.setState(function (previousState, currentProps) {
+	        return {
+	          done: done,
+	          tasks: tasks
+	        };
+	      });
+	    });
+	  },
 
 	  render: function render() {
 	    return _react2.default.createElement(
@@ -86,7 +116,8 @@
 	        window.user.name
 	      ),
 	      _react2.default.createElement(Profile, null),
-	      _react2.default.createElement(ToDoList, null)
+	      _react2.default.createElement(ToDoList, { getData: this._getData, data: this.state }),
+	      _react2.default.createElement(Overview, { getData: this._getData, data: this.state })
 	    );
 	  }
 	});
@@ -119,51 +150,13 @@
 
 	var ToDoList = _react2.default.createClass({
 	  displayName: 'ToDoList',
-	  getInitialState: function getInitialState() {
-	    this._getItemList();
-	    return {
-	      done: [],
-	      tasks: []
-	    };
-	  },
-
-	  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
-	    // Gets called when receiving the tasks from the ajax request
-	    this.setState({
-	      done: this.state.done,
-	      tasks: nextProps.tasks
-	    });
-	  },
 
 	  newItem: {},
 
-	  _getItemList: function _getItemList() {
-	    var self = this;
-	    var url = "http://localhost:8080/users/" + window.user.id + "/tasks";
-	    $.get(url, function (data) {
-	      var tasks = [];
-	      var done = [];
-
-	      data.forEach(function (item) {
-	        if (item.status === "done") {
-	          done.push(item);
-	        } else {
-	          tasks.push(item);
-	        }
-	      });
-
-	      self.setState(function (previousState, currentProps) {
-	        return {
-	          done: done,
-	          tasks: tasks
-	        };
-	      });
-	    });
-	  },
 	  _update: function _update() {
 	    // Gets called on every change in the input fields
 	    this.newItem = {
-	      item_key: this.state.tasks.length + (0, _moment2.default)().unix(),
+	      item_key: this.props.data.tasks.length + (0, _moment2.default)().unix(),
 	      name: this.refs.name.value,
 	      description: this.refs.description.value,
 	      importance: this.refs.importance.value,
@@ -174,11 +167,11 @@
 	    };
 	  },
 	  _deleteFromToDo: function _deleteFromToDo(i) {
-	    this._moveFromList(i, "remove", this.state.tasks);
+	    this._moveFromList(i, "remove", this.props.data.tasks);
 	    this._deleteItem(i);
 	  },
 	  _deleteFromDone: function _deleteFromDone(i) {
-	    this._moveFromList(i, "remove", this.state.done);
+	    this._moveFromList(i, "remove", this.props.data.done);
 	    this._deleteItem(i);
 	  },
 	  _deleteItem: function _deleteItem(i) {
@@ -235,8 +228,8 @@
 	  _moveFromList: function _moveFromList(i, action, target) {
 	    var self = this;
 	    var count = 0;
-	    var tasks = this.state.tasks;
-	    var done = this.state.done;
+	    var tasks = this.props.data.tasks;
+	    var done = this.props.data.done;
 
 	    if (action === "remove") {
 	      target.forEach(function (item) {
@@ -282,7 +275,7 @@
 	  _addItem: function _addItem(e) {
 	    var data = this.newItem;
 	    var url = "http://localhost:8080/tasks";
-	    var tasks = this.state.tasks;
+	    var tasks = this.props.data.tasks;
 	    var filledIn = document.getElementById('task-name').value !== "" && document.getElementById('task-description').value !== "" && document.getElementById('task-importance').value <= 10 && document.getElementById('task-importance').value >= 0;
 
 	    if (filledIn) {
@@ -308,7 +301,7 @@
 	      }, 10);
 
 	      // Renew the list to get the id of the new item so it can be deleted
-	      this._getItemList();
+	      this.props.getData();
 	    } else {
 	      console.log("error");
 	    }
@@ -369,7 +362,7 @@
 	      _react2.default.createElement(
 	        'ul',
 	        null,
-	        this.state.tasks.map(function (item, i) {
+	        this.props.data.tasks.map(function (item, i) {
 	          return _react2.default.createElement(ToDoItem, { 'delete': self._deleteFromToDo, move: self._doneItem, data: item, key: i });
 	        })
 	      ),
@@ -381,7 +374,7 @@
 	      _react2.default.createElement(
 	        'ul',
 	        null,
-	        this.state.done.map(function (item, i) {
+	        this.props.data.done.map(function (item, i) {
 	          return _react2.default.createElement(ToDoItem, { 'delete': self._deleteFromDone, move: self._toDoItem, data: item, key: i });
 	        })
 	      )
@@ -509,7 +502,18 @@
 	  }
 	});
 
-	_reactDom2.default.render(_react2.default.createElement(App, null), document.getElementById('content'));
+	var Overview = _react2.default.createClass({
+	  displayName: 'Overview',
+	  render: function render() {
+	    return _react2.default.createElement(
+	      'div',
+	      null,
+	      'Test'
+	    );
+	  }
+	});
+
+	_reactDom2.default.render(_react2.default.createElement(App, null), document.getElementById('list'));
 
 /***/ },
 /* 2 */

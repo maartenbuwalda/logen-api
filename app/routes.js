@@ -39,11 +39,11 @@ module.exports = function(app, passport, express, router) {
         failureFlash : true // allow flash messages
     }));
 
-    app.get('/overview', isLoggedIn, function(req, res) {
+    app.get('/list', isLoggedIn, function(req, res) {
         res.locals = {
             user: req.user
         }
-        res.render('overview.ejs');
+        res.render('list.ejs');
     });
 
     app.get('/profile', isLoggedIn, function(req, res) {
@@ -61,7 +61,7 @@ module.exports = function(app, passport, express, router) {
     // handle the callback after facebook has authenticated the user
     app.get('/auth/facebook/callback',
         passport.authenticate('facebook', {
-            successRedirect : '/overview',
+            successRedirect : '/list',
             failureRedirect : '/'
         }));
 
