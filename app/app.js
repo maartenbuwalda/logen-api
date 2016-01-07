@@ -51,6 +51,7 @@ var App = React.createClass({
 });
 
 var Profile = React.createClass({
+
   render() {
     return (
       <div>
@@ -361,6 +362,7 @@ var ToDoActions = React.createClass({
 });
 
 var DoneActions = React.createClass({
+
   render(){
     var boundToDo = this.props.move.bind(null, this.props.data)
     return (
@@ -374,6 +376,7 @@ var DoneActions = React.createClass({
 });
 
 var Overview = React.createClass({
+
   componentWillReceiveProps(){
     console.log("sajkhaskjhfjkashfjka")
   },
