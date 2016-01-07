@@ -72,6 +72,8 @@
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+	var host = "http://localhost:8080";
+
 	var App = _react2.default.createClass({
 	  displayName: 'App',
 	  getInitialState: function getInitialState() {
@@ -83,7 +85,7 @@
 	  },
 	  _getData: function _getData() {
 	    var self = this;
-	    var url = "http://localhost:8080/users/" + window.user.id + "/tasks";
+	    var url = host + "/users/" + window.user.id + "/tasks";
 	    $.get(url, function (data) {
 	      var tasks = [];
 	      var done = [];
@@ -175,7 +177,7 @@
 	    this._deleteItem(i);
 	  },
 	  _deleteItem: function _deleteItem(i) {
-	    var url = "http://localhost:8080/tasks/" + i._id;
+	    var url = host + "/tasks/" + i._id;
 
 	    $.ajax({
 	      url: url,
@@ -187,7 +189,7 @@
 	  },
 	  _doneItem: function _doneItem(i) {
 	    var self = this;
-	    var url = "http://localhost:8080/tasks/" + i._id;
+	    var url = host + "/tasks/" + i._id;
 	    var finished = JSON.stringify((0, _moment2.default)());
 
 	    i.status = "done";
@@ -208,7 +210,7 @@
 	    });
 	  },
 	  _toDoItem: function _toDoItem(i) {
-	    var url = "http://localhost:8080/tasks/" + i._id;
+	    var url = host + "/tasks/" + i._id;
 
 	    i.status = "to-do";
 
@@ -274,7 +276,7 @@
 	  },
 	  _addItem: function _addItem(e) {
 	    var data = this.newItem;
-	    var url = "http://localhost:8080/tasks";
+	    var url = host + "/tasks";
 	    var tasks = this.props.data.tasks;
 	    var filledIn = document.getElementById('task-name').value !== "" && document.getElementById('task-description').value !== "" && document.getElementById('task-importance').value <= 10 && document.getElementById('task-importance').value >= 0;
 
