@@ -116,8 +116,6 @@ var ToDoList = React.createClass({
     i.status = "done";
     i.time_finished = finished;
 
-    console.log(i)
-
     $.ajax({
       url: url,
       type: "PUT",
