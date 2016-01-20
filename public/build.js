@@ -506,9 +506,6 @@
 
 	var Overview = _react2.default.createClass({
 	  displayName: 'Overview',
-	  componentWillReceiveProps: function componentWillReceiveProps() {
-	    console.log("sajkhaskjhfjkashfjka");
-	  },
 	  render: function render() {
 	    return _react2.default.createElement(
 	      'div',

@@ -379,9 +379,6 @@ var DoneActions = React.createClass({
 
 var Overview = React.createClass({
 
-  componentWillReceiveProps(){
-    console.log("sajkhaskjhfjkashfjka")
-  },
   render(){
     return (
       <div>Test</div>
