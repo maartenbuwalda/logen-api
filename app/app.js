@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import moment from 'moment';
+import D3 from 'D3';
 
 var host = "http://localhost:8080";
 
@@ -10,7 +11,8 @@ var App = React.createClass({
     this._getData();
     return {
       done: [],
-      tasks: []
+      tasks: [],
+      categories: [{name: "Study"}, {name: "Work"}, {name: "Sports"}, {name: "Other"}]
     };
   },
 
@@ -236,6 +238,7 @@ var ToDoList = React.createClass({
   },
 
   render(){
+    console.log(this.props)
     var self = this;
     return (
       <div>
@@ -250,16 +253,19 @@ var ToDoList = React.createClass({
             placeholder="Name"
             required
           />
-          <input
+          <select
             className="task-input"
             id="task-description"
-            type="text"
+            type="select"
             ref="description"
             onChange={this._update}
-            value={this.props.description}
-            placeholder="Description"
             required
-          />
+          >
+            {this.props.data.categories.map(function(item, i){
+                return <option key={i} value={item.name}>{item.name}</option>
+              })
+            }
+          </select>
           <input
             className="task-input"
             id="task-importance"
