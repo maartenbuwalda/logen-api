@@ -1,10 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import moment from 'moment';
-import D3 from 'D3';
+import rd3 from 'react-d3';
 
 var host = "http://localhost:8080";
-
 var App = React.createClass({
 
   getInitialState(){
@@ -77,7 +76,7 @@ var ToDoList = React.createClass({
       name: this.refs.name.value,
       description: this.refs.description.value,
       importance: this.refs.importance.value,
-      time_created: JSON.stringify(moment()),
+      time_created: JSON.stringify(moment().format('dddd')),
       rating: "",
       status: "to-do",
       user_id: window.user.id,
@@ -109,7 +108,7 @@ var ToDoList = React.createClass({
   _doneItem(i){
     var self = this;
     var url = host + "/tasks/" + i._id;
-    var finished = JSON.stringify(moment())
+    var finished = JSON.stringify(moment().format('dddd'))
 
     i.status = "done";
     i.time_finished = finished;
@@ -322,7 +321,7 @@ var ToDoItem = React.createClass({
         <div>Name: {this.props.data.name}</div>
         <div>Description: {this.props.data.description}</div>
         <div>Importance: {this.props.data.importance}</div>
-        <div>Created: {moment(JSON.parse(this.props.data.time_created)).utc().format("LLLL")}</div>
+        <div>Created: {this.props.data.time_created}</div>
         <div>Status: {this.props.data.status}</div>
         {actions}
         <span onClick={boundDelete}> Delete </span>
@@ -374,7 +373,7 @@ var DoneActions = React.createClass({
     var boundToDo = this.props.move.bind(null, this.props.data)
     return (
       <div>
-        <div>Finished: {moment(JSON.parse(this.props.data.time_finished)).utc().format("LLLL")}</div>
+        <div>Finished: {this.props.data.time_finished}</div>
         <div>Rating: {this.props.data.rating}</div>
         <span onClick={boundToDo}> To do </span>
       </div>
@@ -384,11 +383,24 @@ var DoneActions = React.createClass({
 
 var Overview = React.createClass({
 
+  componentWillReceiveProps(nextProps){
+    var lineData = [];
+    nextProps.data.done.map(function(item, i){
+      lineData.push({
+        x: item.description,
+        y: (item.rating * item.importance)
+      })
+    })
+    this.setState({
+      data: lineData
+    })
+  },
+
   render(){
     return (
       <div>Test</div>
     )
   }
-})
+});
 
 ReactDOM.render(<App/>, document.getElementById('list'));
