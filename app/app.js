@@ -238,7 +238,6 @@ var ToDoList = React.createClass({
   },
 
   render(){
-    console.log(this.props)
     var self = this;
     return (
       <div>

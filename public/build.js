@@ -315,7 +315,6 @@
 	    return false;
 	  },
 	  render: function render() {
-	    console.log(this.props);
 	    var self = this;
 	    return _react2.default.createElement(
 	      'div',
