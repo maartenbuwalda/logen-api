@@ -5,7 +5,6 @@ var TaskSchema   = new Schema({
     item_key: Number,
     user_id: String,
     name: String,
-    description: String,
     category: String,
     importance: String,
     time_created: String,

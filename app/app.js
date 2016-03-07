@@ -34,7 +34,8 @@ var App = React.createClass({
         self.setState(function(previousState, currentProps) {
           return {
             done: done,
-            tasks: tasks
+            tasks: tasks,
+            isLoaded: true
           };
         });
       }
@@ -42,12 +43,18 @@ var App = React.createClass({
   },
 
   render: function(){
+    let toRender;
+    if (this.state.isLoaded){
+      toRender = <Overview getData={this._getData} data={this.state}/>
+    }else{
+      toRender = "Loading..."
+    }
     return (
       <div>
         <h1>Hello {window.user.name}</h1>
         <Profile/>
         <ToDoList getData={this._getData} data={this.state}/>
-        <Overview getData={this._getData} data={this.state}/>
+        {toRender}
       </div>
     );
   }
@@ -74,9 +81,9 @@ var ToDoList = React.createClass({
     this.newItem = {
       item_key: this.props.data.tasks.length + moment().unix(),
       name: this.refs.name.value,
-      description: this.refs.description.value,
+      category: this.refs.category.value,
       importance: this.refs.importance.value,
-      time_created: JSON.stringify(moment().format('dddd')),
+      time_created: moment().format('dddd'),
       rating: "",
       status: "to-do",
       user_id: window.user.id,
@@ -108,7 +115,7 @@ var ToDoList = React.createClass({
   _doneItem(i){
     var self = this;
     var url = host + "/tasks/" + i._id;
-    var finished = JSON.stringify(moment().format('dddd'))
+    var finished = moment().format('dddd')
 
     i.status = "done";
     i.time_finished = finished;
@@ -201,7 +208,7 @@ var ToDoList = React.createClass({
     var tasks = this.props.data.tasks;
     var filledIn = (
       document.getElementById('task-name').value !== "" &&
-      document.getElementById('task-description').value !== "" &&
+      document.getElementById('task-category').value !== "" &&
       document.getElementById('task-importance').value <= 10 &&
       document.getElementById('task-importance').value >= 0
     );
@@ -253,9 +260,9 @@ var ToDoList = React.createClass({
           />
           <select
             className="task-input"
-            id="task-description"
+            id="task-category"
             type="select"
-            ref="description"
+            ref="category"
             onChange={this._update}
             required
           >
@@ -319,7 +326,7 @@ var ToDoItem = React.createClass({
     return (
       <li key={this.props.key}>
         <div>Name: {this.props.data.name}</div>
-        <div>Description: {this.props.data.description}</div>
+        <div>Category: {this.props.data.category}</div>
         <div>Importance: {this.props.data.importance}</div>
         <div>Created: {this.props.data.time_created}</div>
         <div>Status: {this.props.data.status}</div>
@@ -383,86 +390,184 @@ var DoneActions = React.createClass({
 
 var Overview = React.createClass({
 
-  componentWillReceiveProps(nextProps){
-    var lineData = [];
-    nextProps.data.done.map(function(item, i){
-      lineData.push({
-        x: item.description,
-        y: (item.rating * item.importance)
-      })
-    })
-    this.setState({
-      data: lineData
-    })
-    this.createGraph();
+  getInitialState(){
+    console.log("initial state")
+    return null;
   },
 
-  createGraph(){
-    // Set the dimensions of the canvas / graph
-    var margin = {top: 30, right: 20, bottom: 30, left: 50},
-        width = 600 - margin.left - margin.right,
-        height = 270 - margin.top - margin.bottom;
+  _formatData(dataToFormat){
+    console.log("format data")
+    var week = [{name: "Monday"}, {name: "Tuesday"}, {name: "Wednesday"}, {name: "Thursday"}, {name: "Friday"}, {name: "Saturday"}, {name: "Sunday"}];
+    var dataset = [];
+    var categories = [];
 
-    // Parse the date / time
-    var parseDate = d3.time.format("%d-%b-%y").parse;
-
-    // Set the ranges
-    var x = d3.time.scale().range([0, width]);
-    var y = d3.scale.linear().range([height, 0]);
-
-    // Define the axes
-    var xAxis = d3.svg.axis().scale(x)
-        .orient("bottom").ticks(5);
-
-    var yAxis = d3.svg.axis().scale(y)
-        .orient("left").ticks(5);
-
-    // Define the line
-    var valueline = d3.svg.line()
-        .x(function(d) { return x(d.date); })
-        .y(function(d) { return y(d.close); });
-
-    // Adds the svg canvas
-    var svg = d3.select("graph")
-        .append("svg")
-            .attr("width", width + margin.left + margin.right)
-            .attr("height", height + margin.top + margin.bottom)
-        .append("g")
-            .attr("transform",
-                  "translate(" + margin.left + "," + margin.top + ")");
-    // Get the data
-    d3.json(this.state.data, function(error, data) {
-        data.forEach(function(d) {
-            d.date = parseDate(d.date);
-            d.close = +d.close;
-        });
-
-        // Scale the range of the data
-        x.domain(d3.extent(data, function(d) { return d.date; }));
-        y.domain([0, d3.max(data, function(d) { return d.close; })]);
-
-        // Add the valueline path.
-        svg.append("path")
-            .attr("class", "line")
-            .attr("d", valueline(data));
-
-        // Add the X Axis
-        svg.append("g")
-            .attr("class", "x axis")
-            .attr("transform", "translate(0," + height + ")")
-            .call(xAxis);
-
-        // Add the Y Axis
-        svg.append("g")
-            .attr("class", "y axis")
-            .call(yAxis);
+    dataToFormat.data.categories.map(function(category, i){
+      categories.push(category.name);
     });
 
+    week.map(function(item, i){
+      dataset.push({
+        data: [],
+        groups: [],
+        name: item.name
+      })
+    });
+
+    dataset.map(function(item, i){
+      categories.map(function(category, i){
+        item.groups.push({
+          name: category,
+          value: 0
+        })
+      })
+    });
+
+    dataToFormat.data.done.map(function(item, i){
+      dataset.forEach(function(c){
+        if(item.time_finished === c.name){
+          c.data.push({
+            category: item.category,
+            score: (item.rating * item.importance)
+          })
+        }
+      })
+    })
+
+    this.setState({
+      data: dataset,
+      categories: categories
+    })
+
+    this.graph._draw(dataset, categories);
+  },
+
+  componentWillMount(){
+    console.log("mounted")
+    this._formatData(this.props);
+  },
+
+  shouldComponentUpdate(nextProps, nextState){
+    console.log("should update")
+    this.graph._update();
+    return false;
+  },
+
+  graph: {
+    _draw(data, categories){
+      console.log("drawing graph", data)
+
+      var margin = {top: 20, right: 20, bottom: 30, left: 40},
+          width = 960 - margin.left - margin.right,
+          height = 500 - margin.top - margin.bottom;
+
+      var x0 = d3.scale.ordinal()
+          .rangeRoundBands([0, width], .1);
+
+      var x1 = d3.scale.ordinal();
+
+      var y = d3.scale.linear()
+          .range([height, 0]);
+
+      var color = d3.scale.ordinal()
+          .range(["#98abc5", "#8a89a6", "#7b6888", "#6b486b"]);
+
+      var xAxis = d3.svg.axis()
+          .scale(x0)
+          .orient("bottom");
+
+      var yAxis = d3.svg.axis()
+          .scale(y)
+          .orient("left")
+          .tickFormat(d3.format(".2s"));
+
+      var svg = d3.select("body").append("svg")
+          .attr("width", width + margin.left + margin.right)
+          .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+          .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+      data.forEach(function(d) {
+        d.groups.forEach(function(group){
+          d.data.forEach(function(item){
+            if(item.category === group.name){
+              group.value = group.value + item.score
+            }
+          })
+        })
+      });
+
+      data.sort(function(a, b) { return b.total - a.total; });
+
+      x0.domain(data.map(function(d) { return d.name; }));
+      x1.domain(categories).rangeRoundBands([0, x0.rangeBand()]);
+      y.domain([0, d3.max(data, function(d) {
+        return d3.max(d.groups, function(d) {
+          return d.value;
+        });
+      })]);
+
+      svg.append("g")
+          .attr("class", "x axis")
+          .attr("transform", "translate(0," + height + ")")
+          .call(xAxis);
+
+      svg.append("g")
+          .attr("class", "y axis")
+          .call(yAxis)
+        .append("text")
+          .attr("transform", "rotate(-90)")
+          .attr("y", 6)
+          .attr("dy", ".71em")
+          .style("text-anchor", "end")
+          .text("Score");
+
+      var day = svg.selectAll(".day")
+          .data(data)
+        .enter().append("g")
+          .attr("class", "day")
+          .attr("transform", function(d) {
+            return "translate(" + x0(d.name) + ",0)";
+          });
+
+      day.selectAll("rect")
+          .data(function(d) {
+            return d.groups;
+          })
+        .enter().append("rect")
+          .attr("width", x1.rangeBand())
+          .attr("x", function(d) { return x1(d.name); })
+          .attr("y", function(d) { return y(d.value); })
+          .attr("height", function(d) { return height - y(d.value); })
+          .style("fill", function(d) { return color(d.name); });
+
+      var legend = svg.selectAll(".legend")
+          .data(categories.slice().reverse())
+        .enter().append("g")
+          .attr("class", "legend")
+          .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+
+      legend.append("rect")
+          .attr("x", width - 18)
+          .attr("width", 18)
+          .attr("height", 18)
+          .style("fill", color);
+
+      legend.append("text")
+          .attr("x", width - 24)
+          .attr("y", 9)
+          .attr("dy", ".35em")
+          .style("text-anchor", "end")
+          .text(function(d) { return d; });
+    },
+    _update(){
+      console.log("updating graph")
+    }
   },
 
   render(){
+    console.log("render")
     return (
-      <div id="graph">test</div>
+      <div id="graph"></div>
     )
   }
 });

@@ -105,13 +105,20 @@
 	      self.setState(function (previousState, currentProps) {
 	        return {
 	          done: done,
-	          tasks: tasks
+	          tasks: tasks,
+	          isLoaded: true
 	        };
 	      });
 	    });
 	  },
 
 	  render: function render() {
+	    var toRender = undefined;
+	    if (this.state.isLoaded) {
+	      toRender = _react2.default.createElement(Overview, { getData: this._getData, data: this.state });
+	    } else {
+	      toRender = "Loading...";
+	    }
 	    return _react2.default.createElement(
 	      'div',
 	      null,
@@ -123,7 +130,7 @@
 	      ),
 	      _react2.default.createElement(Profile, null),
 	      _react2.default.createElement(ToDoList, { getData: this._getData, data: this.state }),
-	      _react2.default.createElement(Overview, { getData: this._getData, data: this.state })
+	      toRender
 	    );
 	  }
 	});
@@ -164,9 +171,9 @@
 	    this.newItem = {
 	      item_key: this.props.data.tasks.length + (0, _moment2.default)().unix(),
 	      name: this.refs.name.value,
-	      description: this.refs.description.value,
+	      category: this.refs.category.value,
 	      importance: this.refs.importance.value,
-	      time_created: JSON.stringify((0, _moment2.default)().format('dddd')),
+	      time_created: (0, _moment2.default)().format('dddd'),
 	      rating: "",
 	      status: "to-do",
 	      user_id: window.user.id
@@ -194,7 +201,7 @@
 	  _doneItem: function _doneItem(i) {
 	    var self = this;
 	    var url = host + "/tasks/" + i._id;
-	    var finished = JSON.stringify((0, _moment2.default)().format('dddd'));
+	    var finished = (0, _moment2.default)().format('dddd');
 
 	    i.status = "done";
 	    i.time_finished = finished;
@@ -282,7 +289,7 @@
 	    var data = this.newItem;
 	    var url = host + "/tasks";
 	    var tasks = this.props.data.tasks;
-	    var filledIn = document.getElementById('task-name').value !== "" && document.getElementById('task-description').value !== "" && document.getElementById('task-importance').value <= 10 && document.getElementById('task-importance').value >= 0;
+	    var filledIn = document.getElementById('task-name').value !== "" && document.getElementById('task-category').value !== "" && document.getElementById('task-importance').value <= 10 && document.getElementById('task-importance').value >= 0;
 
 	    if (filledIn) {
 	      tasks.push(this.newItem);
@@ -335,9 +342,9 @@
 	          'select',
 	          {
 	            className: 'task-input',
-	            id: 'task-description',
+	            id: 'task-category',
 	            type: 'select',
-	            ref: 'description',
+	            ref: 'category',
 	            onChange: this._update,
 	            required: true
 	          },
@@ -423,8 +430,8 @@
 	      _react2.default.createElement(
 	        'div',
 	        null,
-	        'Description: ',
-	        this.props.data.description
+	        'Category: ',
+	        this.props.data.category
 	      ),
 	      _react2.default.createElement(
 	        'div',
@@ -518,77 +525,149 @@
 
 	var Overview = _react2.default.createClass({
 	  displayName: 'Overview',
-	  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
-	    var lineData = [];
-	    nextProps.data.done.map(function (item, i) {
-	      lineData.push({
-	        x: item.description,
-	        y: item.rating * item.importance
-	      });
-	    });
-	    this.setState({
-	      data: lineData
-	    });
-	    this.createGraph();
+	  getInitialState: function getInitialState() {
+	    console.log("initial state");
+	    return null;
 	  },
-	  createGraph: function createGraph() {
-	    // Set the dimensions of the canvas / graph
-	    var margin = { top: 30, right: 20, bottom: 30, left: 50 },
-	        width = 600 - margin.left - margin.right,
-	        height = 270 - margin.top - margin.bottom;
+	  _formatData: function _formatData(dataToFormat) {
+	    console.log("format data");
+	    var week = [{ name: "Monday" }, { name: "Tuesday" }, { name: "Wednesday" }, { name: "Thursday" }, { name: "Friday" }, { name: "Saturday" }, { name: "Sunday" }];
+	    var dataset = [];
+	    var categories = [];
 
-	    // Parse the date / time
-	    var parseDate = _d2.default.time.format("%d-%b-%y").parse;
-
-	    // Set the ranges
-	    var x = _d2.default.time.scale().range([0, width]);
-	    var y = _d2.default.scale.linear().range([height, 0]);
-
-	    // Define the axes
-	    var xAxis = _d2.default.svg.axis().scale(x).orient("bottom").ticks(5);
-
-	    var yAxis = _d2.default.svg.axis().scale(y).orient("left").ticks(5);
-
-	    // Define the line
-	    var valueline = _d2.default.svg.line().x(function (d) {
-	      return x(d.date);
-	    }).y(function (d) {
-	      return y(d.close);
+	    dataToFormat.data.categories.map(function (category, i) {
+	      categories.push(category.name);
 	    });
 
-	    // Adds the svg canvas
-	    var svg = _d2.default.select("graph").append("svg").attr("width", width + margin.left + margin.right).attr("height", height + margin.top + margin.bottom).append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-	    // Get the data
-	    _d2.default.json(this.state.data, function (error, data) {
+	    week.map(function (item, i) {
+	      dataset.push({
+	        data: [],
+	        groups: [],
+	        name: item.name
+	      });
+	    });
+
+	    dataset.map(function (item, i) {
+	      categories.map(function (category, i) {
+	        item.groups.push({
+	          name: category,
+	          value: 0
+	        });
+	      });
+	    });
+
+	    dataToFormat.data.done.map(function (item, i) {
+	      dataset.forEach(function (c) {
+	        if (item.time_finished === c.name) {
+	          c.data.push({
+	            category: item.category,
+	            score: item.rating * item.importance
+	          });
+	        }
+	      });
+	    });
+
+	    this.setState({
+	      data: dataset,
+	      categories: categories
+	    });
+
+	    this.graph._draw(dataset, categories);
+	  },
+	  componentWillMount: function componentWillMount() {
+	    console.log("mounted");
+	    this._formatData(this.props);
+	  },
+	  shouldComponentUpdate: function shouldComponentUpdate(nextProps, nextState) {
+	    console.log("should update");
+	    this.graph._update();
+	    return false;
+	  },
+
+	  graph: {
+	    _draw: function _draw(data, categories) {
+	      console.log("drawing graph", data);
+
+	      var margin = { top: 20, right: 20, bottom: 30, left: 40 },
+	          width = 960 - margin.left - margin.right,
+	          height = 500 - margin.top - margin.bottom;
+
+	      var x0 = _d2.default.scale.ordinal().rangeRoundBands([0, width], .1);
+
+	      var x1 = _d2.default.scale.ordinal();
+
+	      var y = _d2.default.scale.linear().range([height, 0]);
+
+	      var color = _d2.default.scale.ordinal().range(["#98abc5", "#8a89a6", "#7b6888", "#6b486b"]);
+
+	      var xAxis = _d2.default.svg.axis().scale(x0).orient("bottom");
+
+	      var yAxis = _d2.default.svg.axis().scale(y).orient("left").tickFormat(_d2.default.format(".2s"));
+
+	      var svg = _d2.default.select("body").append("svg").attr("width", width + margin.left + margin.right).attr("height", height + margin.top + margin.bottom).append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
 	      data.forEach(function (d) {
-	        d.date = parseDate(d.date);
-	        d.close = +d.close;
+	        d.groups.forEach(function (group) {
+	          d.data.forEach(function (item) {
+	            if (item.category === group.name) {
+	              group.value = group.value + item.score;
+	            }
+	          });
+	        });
 	      });
 
-	      // Scale the range of the data
-	      x.domain(_d2.default.extent(data, function (d) {
-	        return d.date;
+	      data.sort(function (a, b) {
+	        return b.total - a.total;
+	      });
+
+	      x0.domain(data.map(function (d) {
+	        return d.name;
 	      }));
+	      x1.domain(categories).rangeRoundBands([0, x0.rangeBand()]);
 	      y.domain([0, _d2.default.max(data, function (d) {
-	        return d.close;
+	        return _d2.default.max(d.groups, function (d) {
+	          return d.value;
+	        });
 	      })]);
 
-	      // Add the valueline path.
-	      svg.append("path").attr("class", "line").attr("d", valueline(data));
-
-	      // Add the X Axis
 	      svg.append("g").attr("class", "x axis").attr("transform", "translate(0," + height + ")").call(xAxis);
 
-	      // Add the Y Axis
-	      svg.append("g").attr("class", "y axis").call(yAxis);
-	    });
+	      svg.append("g").attr("class", "y axis").call(yAxis).append("text").attr("transform", "rotate(-90)").attr("y", 6).attr("dy", ".71em").style("text-anchor", "end").text("Score");
+
+	      var day = svg.selectAll(".day").data(data).enter().append("g").attr("class", "day").attr("transform", function (d) {
+	        return "translate(" + x0(d.name) + ",0)";
+	      });
+
+	      day.selectAll("rect").data(function (d) {
+	        return d.groups;
+	      }).enter().append("rect").attr("width", x1.rangeBand()).attr("x", function (d) {
+	        return x1(d.name);
+	      }).attr("y", function (d) {
+	        return y(d.value);
+	      }).attr("height", function (d) {
+	        return height - y(d.value);
+	      }).style("fill", function (d) {
+	        return color(d.name);
+	      });
+
+	      var legend = svg.selectAll(".legend").data(categories.slice().reverse()).enter().append("g").attr("class", "legend").attr("transform", function (d, i) {
+	        return "translate(0," + i * 20 + ")";
+	      });
+
+	      legend.append("rect").attr("x", width - 18).attr("width", 18).attr("height", 18).style("fill", color);
+
+	      legend.append("text").attr("x", width - 24).attr("y", 9).attr("dy", ".35em").style("text-anchor", "end").text(function (d) {
+	        return d;
+	      });
+	    },
+	    _update: function _update() {
+	      console.log("updating graph");
+	    }
 	  },
+
 	  render: function render() {
-	    return _react2.default.createElement(
-	      'div',
-	      { id: 'graph' },
-	      'test'
-	    );
+	    console.log("render");
+	    return _react2.default.createElement('div', { id: 'graph' });
 	  }
 	});
 

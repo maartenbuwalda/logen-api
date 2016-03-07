@@ -106,7 +106,6 @@ module.exports = function(app, passport, express, router) {
             task.item_key = req.body.item_key;
             task.name = req.body.name;  // set the tasks name (comes from the request)
             task.user_id = req.body.user_id;
-            task.description = req.body.description;
             task.category = req.body.category;
             task.importance = req.body.importance;
             task.time_created = req.body.time_created;
