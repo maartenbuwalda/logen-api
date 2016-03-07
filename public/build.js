@@ -70,7 +70,7 @@
 
 	var _moment2 = _interopRequireDefault(_moment);
 
-	var _d = __webpack_require__(251);
+	var _d = __webpack_require__(248);
 
 	var _d2 = _interopRequireDefault(_d);
 
@@ -284,6 +284,10 @@
 	        count++;
 	      });
 	    }
+
+	    setTimeout(function () {
+	      self.props.getData();
+	    }, 200);
 	  },
 	  _addItem: function _addItem(e) {
 	    var data = this.newItem;
@@ -525,12 +529,8 @@
 
 	var Overview = _react2.default.createClass({
 	  displayName: 'Overview',
-	  getInitialState: function getInitialState() {
-	    console.log("initial state");
-	    return null;
-	  },
 	  _formatData: function _formatData(dataToFormat) {
-	    console.log("format data");
+	    console.log("formatting data");
 	    var week = [{ name: "Monday" }, { name: "Tuesday" }, { name: "Wednesday" }, { name: "Thursday" }, { name: "Friday" }, { name: "Saturday" }, { name: "Sunday" }];
 	    var dataset = [];
 	    var categories = [];
@@ -551,7 +551,8 @@
 	      categories.map(function (category, i) {
 	        item.groups.push({
 	          name: category,
-	          value: 0
+	          value: 0,
+	          count: 0
 	        });
 	      });
 	    });
@@ -567,68 +568,102 @@
 	      });
 	    });
 
-	    this.setState({
-	      data: dataset,
-	      categories: categories
+	    dataset.forEach(function (d) {
+	      d.groups.forEach(function (group) {
+	        d.data.forEach(function (item) {
+	          if (item.category === group.name) {
+	            group.count = group.count + 1;
+	            group.value = (group.value + item.score) / group.count;
+	          }
+	        });
+	        console.log(group);
+	      });
 	    });
 
-	    this.graph._draw(dataset, categories);
+	    dataset.sort(function (a, b) {
+	      return b.total - a.total;
+	    });
+
+	    return {
+	      data: dataset,
+	      categories: categories
+	    };
 	  },
-	  componentWillMount: function componentWillMount() {
+	  componentDidMount: function componentDidMount() {
 	    console.log("mounted");
-	    this._formatData(this.props);
+	    var dataset = this._formatData(this.props);
+	    this.graph._setup(dataset.data, dataset.categories);
+	  },
+	  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
+	    console.log("received props");
+	    var dataset = this._formatData(nextProps);
+	    this.graph._update(dataset.data, dataset.categories);
 	  },
 	  shouldComponentUpdate: function shouldComponentUpdate(nextProps, nextState) {
-	    console.log("should update");
-	    this.graph._update();
 	    return false;
 	  },
 
 	  graph: {
-	    _draw: function _draw(data, categories) {
+	    margin: {
+	      top: 20,
+	      right: 20,
+	      bottom: 30,
+	      left: 40
+	    },
+
+	    get width() {
+	      return 600 - this.margin.left - this.margin.right;
+	    },
+	    get height() {
+	      return 300 - this.margin.top - this.margin.bottom;
+	    },
+	    get x0() {
+	      return _d2.default.scale.ordinal().rangeRoundBands([0, this.width], .1);
+	    },
+	    get x1() {
+	      return _d2.default.scale.ordinal();
+	    },
+
+	    get color() {
+	      return _d2.default.scale.ordinal().range(["#98abc5", "#8a89a6", "#7b6888", "#6b486b"]);
+	    },
+
+	    get svg() {
+	      return _d2.default.select("#graph").append("svg").attr("width", this.width + this.margin.left + this.margin.right).attr("height", this.height + this.margin.top + this.margin.bottom).attr("class", "chart").append("g").attr("transform", "translate(" + this.margin.left + "," + this.margin.top + ")");
+	    },
+
+	    _setup: function _setup(data, categories) {
+
 	      console.log("drawing graph", data);
 
-	      var margin = { top: 20, right: 20, bottom: 30, left: 40 },
-	          width = 960 - margin.left - margin.right,
-	          height = 500 - margin.top - margin.bottom;
+	      var x0 = this.x0,
+	          x1 = this.x1,
+	          height = this.height,
+	          width = this.width,
+	          margin = this.margin,
+	          svg = this.svg,
+	          color = this.color;
 
-	      var x0 = _d2.default.scale.ordinal().rangeRoundBands([0, width], .1);
+	      this.y = _d2.default.scale.linear().range([height, 0]);
 
-	      var x1 = _d2.default.scale.ordinal();
+	      // var y = this.y.domain([0, d3.max(data, function(d) {
+	      //    var max = d3.max(d.groups, function(d) {
+	      //      return d.value;
+	      //    });
 
-	      var y = _d2.default.scale.linear().range([height, 0]);
+	      //   return (max + (max * 0.2));
+	      // })]);
 
-	      var color = _d2.default.scale.ordinal().range(["#98abc5", "#8a89a6", "#7b6888", "#6b486b"]);
+	      var y = this.y.domain([0, 100]);
 
 	      var xAxis = _d2.default.svg.axis().scale(x0).orient("bottom");
 
-	      var yAxis = _d2.default.svg.axis().scale(y).orient("left").tickFormat(_d2.default.format(".2s"));
-
-	      var svg = _d2.default.select("body").append("svg").attr("width", width + margin.left + margin.right).attr("height", height + margin.top + margin.bottom).append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-	      data.forEach(function (d) {
-	        d.groups.forEach(function (group) {
-	          d.data.forEach(function (item) {
-	            if (item.category === group.name) {
-	              group.value = group.value + item.score;
-	            }
-	          });
-	        });
-	      });
-
-	      data.sort(function (a, b) {
-	        return b.total - a.total;
-	      });
+	      var yAxis = _d2.default.svg.axis().scale(this.y).orient("left").tickFormat(_d2.default.format(".2s"));
 
 	      x0.domain(data.map(function (d) {
 	        return d.name;
 	      }));
 	      x1.domain(categories).rangeRoundBands([0, x0.rangeBand()]);
-	      y.domain([0, _d2.default.max(data, function (d) {
-	        return _d2.default.max(d.groups, function (d) {
-	          return d.value;
-	        });
-	      })]);
 
 	      svg.append("g").attr("class", "x axis").attr("transform", "translate(0," + height + ")").call(xAxis);
 
@@ -640,7 +675,7 @@
 
 	      day.selectAll("rect").data(function (d) {
 	        return d.groups;
-	      }).enter().append("rect").attr("width", x1.rangeBand()).attr("x", function (d) {
+	      }).enter().append("rect").attr("width", x1.rangeBand()).attr("class", "bar").attr("x", function (d) {
 	        return x1(d.name);
 	      }).attr("y", function (d) {
 	        return y(d.value);
@@ -660,13 +695,42 @@
 	        return d;
 	      });
 	    },
-	    _update: function _update() {
-	      console.log("updating graph");
+	    _update: function _update(data, categories) {
+
+	      console.log("updating graph", data);
+
+	      var x0 = this.x0,
+	          x1 = this.x1,
+	          height = this.height,
+	          color = this.color;
+	      var graph = _d2.default.select("#graph");
+
+	      var days = graph.selectAll(".day").data(data);
+
+	      // var y = this.y.domain([0, d3.max(data, function(d) {
+	      //    var max = d3.max(d.groups, function(d) {
+	      //      return d.value;
+	      //    });
+
+	      //    return (max + (max * 0.2));
+	      //  })]);
+
+	      var y = this.y.domain([0, 100]);
+
+	      var bars = days.selectAll(".bar");
+
+	      bars.data(function (d) {
+	        return d.groups;
+	      }).attr("y", function (d) {
+	        return y(d.value);
+	      }).attr("height", function (d) {
+	        return height - y(d.value);
+	      });
 	    }
 	  },
 
 	  render: function render() {
-	    console.log("render");
+	    console.log("rendering");
 	    return _react2.default.createElement('div', { id: 'graph' });
 	  }
 	});
@@ -31721,10 +31785,7 @@
 	}));
 
 /***/ },
-/* 248 */,
-/* 249 */,
-/* 250 */,
-/* 251 */
+/* 248 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_RESULT__;!function() {
