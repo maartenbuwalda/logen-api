@@ -123,12 +123,16 @@
 	      'div',
 	      null,
 	      _react2.default.createElement(
-	        'h1',
-	        null,
-	        'Hello ',
-	        window.user.name
+	        'div',
+	        { className: 'profile' },
+	        _react2.default.createElement(
+	          'h1',
+	          null,
+	          'Hello ',
+	          window.user.name
+	        ),
+	        _react2.default.createElement(Profile, null)
 	      ),
-	      _react2.default.createElement(Profile, null),
 	      _react2.default.createElement(ToDoList, { getData: this._getData, data: this.state }),
 	      toRender
 	    );
@@ -139,24 +143,9 @@
 	  displayName: 'Profile',
 	  render: function render() {
 	    return _react2.default.createElement(
-	      'div',
-	      null,
-	      _react2.default.createElement(
-	        'a',
-	        { href: '/logout' },
-	        'Logout'
-	      ),
-	      _react2.default.createElement(
-	        'p',
-	        null,
-	        _react2.default.createElement(
-	          'strong',
-	          null,
-	          'Name'
-	        ),
-	        ': ',
-	        window.user.name
-	      )
+	      'a',
+	      { href: '/logout' },
+	      'Logout'
 	    );
 	  }
 	});
@@ -376,32 +365,45 @@
 	          type: 'submit',
 	          value: 'Submit',
 	          id: 'task-submit',
+	          className: 'task-input',
 	          onClick: this._addItem
 	        })
 	      ),
 	      _react2.default.createElement(
-	        'h2',
-	        null,
-	        'To do:'
-	      ),
-	      _react2.default.createElement(
-	        'ul',
-	        null,
-	        this.props.data.tasks.map(function (item, i) {
-	          return _react2.default.createElement(ToDoItem, { 'delete': self._deleteFromToDo, move: self._doneItem, data: item, key: i });
-	        })
-	      ),
-	      _react2.default.createElement(
-	        'h2',
-	        null,
-	        'Done:'
-	      ),
-	      _react2.default.createElement(
-	        'ul',
-	        null,
-	        this.props.data.done.map(function (item, i) {
-	          return _react2.default.createElement(ToDoItem, { 'delete': self._deleteFromDone, move: self._toDoItem, data: item, key: i });
-	        })
+	        'div',
+	        { className: 'lists' },
+	        _react2.default.createElement(
+	          'div',
+	          { className: 'list todolist' },
+	          _react2.default.createElement(
+	            'h2',
+	            null,
+	            'To do:'
+	          ),
+	          _react2.default.createElement(
+	            'ul',
+	            null,
+	            this.props.data.tasks.map(function (item, i) {
+	              return _react2.default.createElement(ToDoItem, { 'delete': self._deleteFromToDo, move: self._doneItem, data: item, key: i });
+	            })
+	          )
+	        ),
+	        _react2.default.createElement(
+	          'div',
+	          { className: 'list donelist' },
+	          _react2.default.createElement(
+	            'h2',
+	            null,
+	            'Done:'
+	          ),
+	          _react2.default.createElement(
+	            'ul',
+	            null,
+	            this.props.data.done.map(function (item, i) {
+	              return _react2.default.createElement(ToDoItem, { 'delete': self._deleteFromDone, move: self._toDoItem, data: item, key: i });
+	            })
+	          )
+	        )
 	      )
 	    );
 	  }
@@ -427,39 +429,36 @@
 	      { key: this.props.key },
 	      _react2.default.createElement(
 	        'div',
-	        null,
-	        'Name: ',
-	        this.props.data.name
+	        { className: 'item-name' },
+	        this.props.data.name,
+	        ' (',
+	        this.props.data.category,
+	        ')'
 	      ),
+	      _react2.default.createElement('div', { className: 'item-category' }),
 	      _react2.default.createElement(
 	        'div',
-	        null,
-	        'Category: ',
-	        this.props.data.category
-	      ),
-	      _react2.default.createElement(
-	        'div',
-	        null,
+	        { className: 'item-importance' },
 	        'Importance: ',
 	        this.props.data.importance
 	      ),
 	      _react2.default.createElement(
 	        'div',
-	        null,
+	        { className: 'item-created' },
 	        'Created: ',
 	        this.props.data.time_created
 	      ),
 	      _react2.default.createElement(
 	        'div',
-	        null,
+	        { className: 'item-status' },
 	        'Status: ',
 	        this.props.data.status
 	      ),
 	      actions,
 	      _react2.default.createElement(
 	        'span',
-	        { onClick: boundDelete },
-	        ' Delete '
+	        { className: 'item-delete', onClick: boundDelete },
+	        ' X '
 	      )
 	    );
 	  }
@@ -484,6 +483,8 @@
 	      null,
 	      _react2.default.createElement('input', {
 	        type: 'number',
+	        placeholder: '6',
+	        defaultNumber: '6',
 	        min: '0',
 	        max: '10',
 	        onChange: this._update,
@@ -515,13 +516,13 @@
 	      _react2.default.createElement(
 	        'div',
 	        null,
-	        'Rating: ',
-	        this.props.data.rating
+	        'Score: ',
+	        this.props.data.rating * this.props.data.importance
 	      ),
 	      _react2.default.createElement(
 	        'span',
 	        { onClick: boundToDo },
-	        ' To do '
+	        ' Move back '
 	      )
 	    );
 	  }

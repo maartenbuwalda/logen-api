@@ -51,8 +51,10 @@ var App = React.createClass({
     }
     return (
       <div>
-        <h1>Hello {window.user.name}</h1>
-        <Profile/>
+        <div className="profile">
+          <h1>Hello {window.user.name}</h1>
+          <Profile/>
+        </div>
         <ToDoList getData={this._getData} data={this.state}/>
         {toRender}
       </div>
@@ -63,12 +65,7 @@ var App = React.createClass({
 var Profile = React.createClass({
 
   render() {
-    return (
-      <div>
-        <a href="/logout">Logout</a>
-        <p><strong>Name</strong>: {window.user.name}</p>
-      </div>
-    )
+    return (<a href="/logout">Logout</a>)
   }
 });
 
@@ -291,21 +288,28 @@ var ToDoList = React.createClass({
             type="submit"
             value="Submit"
             id="task-submit"
+            className="task-input"
             onClick={this._addItem}
           />
         </form>
-        <h2>To do:</h2>
-        <ul>
-          {this.props.data.tasks.map(function(item, i){
-            return <ToDoItem delete={self._deleteFromToDo} move={self._doneItem} data={item} key={i}/>
-          })}
-        </ul>
-        <h2>Done:</h2>
-        <ul>
-          {this.props.data.done.map(function(item, i){
-            return <ToDoItem delete={self._deleteFromDone} move={self._toDoItem} data={item} key={i}/>
-          })}
-        </ul>
+        <div className="lists">
+          <div className="list todolist">
+            <h2>To do:</h2>
+            <ul>
+              {this.props.data.tasks.map(function(item, i){
+                return <ToDoItem delete={self._deleteFromToDo} move={self._doneItem} data={item} key={i}/>
+              })}
+            </ul>
+          </div>
+          <div className="list donelist">
+            <h2>Done:</h2>
+            <ul>
+              {this.props.data.done.map(function(item, i){
+                return <ToDoItem delete={self._deleteFromDone} move={self._toDoItem} data={item} key={i}/>
+              })}
+            </ul>
+          </div>
+        </div>
       </div>
     )
   }
@@ -329,13 +333,13 @@ var ToDoItem = React.createClass({
 
     return (
       <li key={this.props.key}>
-        <div>Name: {this.props.data.name}</div>
-        <div>Category: {this.props.data.category}</div>
-        <div>Importance: {this.props.data.importance}</div>
-        <div>Created: {this.props.data.time_created}</div>
-        <div>Status: {this.props.data.status}</div>
+        <div className="item-name" >{this.props.data.name} ({this.props.data.category})</div>
+        <div className="item-category" ></div>
+        <div className="item-importance" >Importance: {this.props.data.importance}</div>
+        <div className="item-created" >Created: {this.props.data.time_created}</div>
+        <div className="item-status" >Status: {this.props.data.status}</div>
         {actions}
-        <span onClick={boundDelete}> Delete </span>
+        <span className="item-delete" onClick={boundDelete}> X </span>
       </li>
     )
   }
@@ -362,6 +366,8 @@ var ToDoActions = React.createClass({
       <form>
         <input
           type="number"
+          placeholder="6"
+          defaultNumber="6"
           min="0"
           max="10"
           onChange={this._update}
@@ -385,8 +391,8 @@ var DoneActions = React.createClass({
     return (
       <div>
         <div>Finished: {this.props.data.time_finished}</div>
-        <div>Rating: {this.props.data.rating}</div>
-        <span onClick={boundToDo}> To do </span>
+        <div>Score: {(this.props.data.rating * this.props.data.importance)}</div>
+        <span onClick={boundToDo}> Move back </span>
       </div>
     )
   }
