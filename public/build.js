@@ -577,7 +577,6 @@
 	            group.value = (group.value + item.score) / group.count;
 	          }
 	        });
-	        console.log(group);
 	      });
 	    });
 
@@ -707,14 +706,6 @@
 	      var graph = _d2.default.select("#graph");
 
 	      var days = graph.selectAll(".day").data(data);
-
-	      // var y = this.y.domain([0, d3.max(data, function(d) {
-	      //    var max = d3.max(d.groups, function(d) {
-	      //      return d.value;
-	      //    });
-
-	      //    return (max + (max * 0.2));
-	      //  })]);
 
 	      var y = this.y.domain([0, 100]);
 
